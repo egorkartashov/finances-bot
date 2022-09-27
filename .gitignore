@@ -1,0 +1,4 @@
+bin/
+.vscode/
+data/*
+!data/config.example.yaml
