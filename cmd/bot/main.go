@@ -9,7 +9,7 @@ import (
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
 	handlers "gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/presenters"
-	expensesstorage "gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/storage/expenses"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/storage"
 )
 
 func main() {
@@ -23,11 +23,11 @@ func main() {
 		log.Fatal("tg client init failed: ", err)
 	}
 
-	expensesModel := expenses.New(expensesstorage.NewInMem())
+	expensesModel := expenses.NewModel(storage.NewExpenses())
 	msgHandlers := []messages.MessageHandler{
-		handlers.NewStartHandler(tgClient),
-		handlers.NewExpenseHandler(expensesModel, tgClient),
-		handlers.NewReportHandler(expensesModel, presenters.NewReportPresenter(), tgClient),
+		handlers.NewStart(tgClient),
+		handlers.NewAddExpense(expensesModel, tgClient),
+		handlers.NewReport(expensesModel, presenters.NewReport(), tgClient),
 	}
 
 	msgModel := messages.New(tgClient, msgHandlers)

@@ -1,4 +1,4 @@
-package expenses
+package storage
 
 import (
 	"sync"
@@ -7,25 +7,25 @@ import (
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/expenses"
 )
 
-type InMemStorage struct {
+type Expenses struct {
 	mutex       *sync.Mutex
 	expensesMap map[int64][]expenses.Expense
 }
 
-func NewInMem() *InMemStorage {
-	return &InMemStorage{
+func NewExpenses() *Expenses {
+	return &Expenses{
 		mutex:       new(sync.Mutex),
 		expensesMap: make(map[int64][]expenses.Expense),
 	}
 }
 
-func (s *InMemStorage) AddExpense(userID int64, exp expenses.Expense) {
+func (s *Expenses) AddExpense(userID int64, exp expenses.Expense) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	s.expensesMap[userID] = append(s.expensesMap[userID], exp)
 }
 
-func (s *InMemStorage) GetCategoriesTotals(userID int64, minTime time.Time) []expenses.CategoryTotal {
+func (s *Expenses) GetCategoriesTotals(userID int64, minTime time.Time) []expenses.CategoryTotal {
 	s.mutex.Lock()
 	expensesCopy, ok := s.expensesMap[userID]
 	s.mutex.Unlock()

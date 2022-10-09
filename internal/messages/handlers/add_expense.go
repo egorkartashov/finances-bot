@@ -11,15 +11,15 @@ import (
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
 )
 
-type AddExpenseHandler struct {
+type AddExpense struct {
 	expenses *expenses.Model
-	baseHandler
+	base
 }
 
-func NewExpenseHandler(expensesModel *expenses.Model, sender messages.MessageSender) *AddExpenseHandler {
-	return &AddExpenseHandler{
+func NewAddExpense(expensesModel *expenses.Model, sender messages.MessageSender) *AddExpense {
+	return &AddExpense{
 		expenses: expensesModel,
-		baseHandler: baseHandler{
+		base: base{
 			messageSender: sender,
 		},
 	}
@@ -39,7 +39,7 @@ var (
 	incorrectDateErr        = errors.New("expense: failed to parse date")
 )
 
-func (h *AddExpenseHandler) Handle(msg messages.Message) messages.MessageHandleResult {
+func (h *AddExpense) Handle(msg messages.Message) messages.MessageHandleResult {
 	if !strings.HasPrefix(msg.Text, expenseKeyword) {
 		return messages.MessageHandleResult{Skipped: true, Err: nil}
 	}
@@ -97,6 +97,6 @@ func parseDate(params []string) (time.Time, error) {
 	}
 }
 
-func (h *AddExpenseHandler) Name() string {
+func (h *AddExpense) Name() string {
 	return "AddExpenseHandler"
 }

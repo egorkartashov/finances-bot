@@ -4,17 +4,17 @@ import (
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
 )
 
-type StartHandler struct {
-	baseHandler
+type Start struct {
+	base
 }
 
-func NewStartHandler(sender messages.MessageSender) *StartHandler {
-	return &StartHandler{
-		baseHandler: baseHandler{sender},
+func NewStart(sender messages.MessageSender) *Start {
+	return &Start{
+		base: base{sender},
 	}
 }
 
-func (h *StartHandler) Handle(msg messages.Message) messages.MessageHandleResult {
+func (h *Start) Handle(msg messages.Message) messages.MessageHandleResult {
 	if msg.Text != "/start" {
 		return messages.MessageHandleResult{Skipped: true, Err: nil}
 	}
@@ -28,6 +28,6 @@ func (h *StartHandler) Handle(msg messages.Message) messages.MessageHandleResult
 	return messages.MessageHandleResult{Skipped: false, Err: err}
 }
 
-func (h *StartHandler) Name() string {
+func (h *Start) Name() string {
 	return "StartHandler"
 }

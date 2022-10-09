@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/expenses"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/expenses/mocks"
+	expenses_mocks "gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/expenses/mocks"
 )
 
 func TestModel_AddExpense_ShouldDelegateToStorage(t *testing.T) {
@@ -49,7 +49,7 @@ func TestModel_AddExpense_ShouldDelegateToStorage(t *testing.T) {
 			storageMock := expenses_mocks.NewMockStorage(ctrl)
 			storageMock.EXPECT().AddExpense(tc.userID, expense)
 
-			expensesModel := expenses.New(storageMock)
+			expensesModel := expenses.NewModel(storageMock)
 			expensesModel.AddExpense(tc.userID, expense)
 		})
 	}

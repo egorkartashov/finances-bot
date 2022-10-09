@@ -7,14 +7,14 @@ import (
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/expenses"
 )
 
-type ReportPresenter struct {
+type Report struct {
 }
 
-func NewReportPresenter() *ReportPresenter {
-	return &ReportPresenter{}
+func NewReport() *Report {
+	return &Report{}
 }
 
-func (p *ReportPresenter) ReportToPlainText(report *expenses.Report) string {
+func (p *Report) ReportToPlainText(report *expenses.Report) string {
 	if len(report.Entries) == 0 {
 		return "Трат нет"
 	}

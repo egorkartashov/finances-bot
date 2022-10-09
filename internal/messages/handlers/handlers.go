@@ -2,6 +2,6 @@ package handlers
 
 import "gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
 
-type baseHandler struct {
+type base struct {
 	messageSender messages.MessageSender
 }

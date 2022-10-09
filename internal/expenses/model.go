@@ -16,7 +16,7 @@ type Model struct {
 	storage Storage
 }
 
-func New(storage Storage) *Model {
+func NewModel(storage Storage) *Model {
 	return &Model{
 		storage: storage,
 	}

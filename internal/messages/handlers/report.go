@@ -11,17 +11,17 @@ type ReportPresenter interface {
 	ReportToPlainText(report *expenses.Report) string
 }
 
-type ReportHandler struct {
+type Report struct {
 	expenses  *expenses.Model
 	presenter ReportPresenter
-	baseHandler
+	base
 }
 
-func NewReportHandler(expenses *expenses.Model, presenter ReportPresenter, sender messages.MessageSender) *ReportHandler {
-	return &ReportHandler{
-		expenses:    expenses,
-		presenter:   presenter,
-		baseHandler: baseHandler{sender},
+func NewReport(expenses *expenses.Model, presenter ReportPresenter, sender messages.MessageSender) *Report {
+	return &Report{
+		expenses:  expenses,
+		presenter: presenter,
+		base:      base{sender},
 	}
 }
 
@@ -39,7 +39,7 @@ var (
 	}
 )
 
-func (h *ReportHandler) Handle(msg messages.Message) messages.MessageHandleResult {
+func (h *Report) Handle(msg messages.Message) messages.MessageHandleResult {
 	foundKw := ""
 	for _, kw := range reportKeywords {
 		if strings.HasPrefix(msg.Text, kw) {
@@ -70,6 +70,6 @@ func (h *ReportHandler) Handle(msg messages.Message) messages.MessageHandleResul
 	return messages.MessageHandleResult{Skipped: false, Err: err}
 }
 
-func (h *ReportHandler) Name() string {
+func (h *Report) Name() string {
 	return "ReportHandler"
 }
