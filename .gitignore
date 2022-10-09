@@ -3,3 +3,4 @@ bin/
 .idea/
 data/*
 !data/config.example.yaml
+**/.DS_Store
