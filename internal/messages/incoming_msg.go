@@ -6,11 +6,12 @@ import (
 )
 
 type MessageSender interface {
-	SendMessage(text string, userID int64) error
+	SendText(text string, userID int64) error
+	SendMessage(userID int64, msg Message) error
 }
 
 type MessageHandler interface {
-	Handle(msg Message) MessageHandleResult
+	Handle(msg Message) HandleResult
 	Name() string
 }
 
@@ -27,11 +28,19 @@ func New(tgClient MessageSender, handlers []MessageHandler) *Model {
 }
 
 type Message struct {
-	Text   string
-	UserID int64
+	Text                  string
+	UserID                int64
+	UserName              string
+	CallbackData          string
+	InlineKeyboardButtons [][]InlineKeyboardButton
 }
 
-type MessageHandleResult struct {
+type InlineKeyboardButton struct {
+	Label        string
+	CallbackData *string
+}
+
+type HandleResult struct {
 	Skipped bool
 	Err     error
 }
@@ -50,5 +59,5 @@ func (m *Model) IncomingMessage(msg Message) error {
 		return nil
 	}
 
-	return m.tgClient.SendMessage(UnknownCommandMessage, msg.UserID)
+	return m.tgClient.SendText(UnknownCommandMessage, msg.UserID)
 }

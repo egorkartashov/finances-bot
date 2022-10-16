@@ -1,7 +1,7 @@
 package tg
 
-//goland:noinspection ALL
 import (
+	"context"
 	"log"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -14,21 +14,24 @@ type TokenGetter interface {
 }
 
 type Client struct {
+	l      *log.Logger
 	client *tgbotapi.BotAPI
 }
 
-func New(tokenGetter TokenGetter) (*Client, error) {
+func New(tokenGetter TokenGetter, l *log.Logger) (*Client, error) {
 	client, err := tgbotapi.NewBotAPI(tokenGetter.Token())
+	client.Debug = true
 	if err != nil {
 		return nil, errors.WithMessage(err, "NewBotAPI")
 	}
 
 	return &Client{
+		l:      l,
 		client: client,
 	}, nil
 }
 
-func (c *Client) SendMessage(text string, userID int64) error {
+func (c *Client) SendText(text string, userID int64) error {
 	_, err := c.client.Send(tgbotapi.NewMessage(userID, text))
 	if err != nil {
 		return errors.WithMessage(err, "client.Send")
@@ -36,25 +39,44 @@ func (c *Client) SendMessage(text string, userID int64) error {
 
 	return nil
 }
-func (c *Client) ListenUpdates(msgModel *messages.Model) {
+
+func (c *Client) SendMessage(userID int64, msg messages.Message) error {
+	tgMsg := tgbotapi.NewMessage(userID, msg.Text)
+	if msg.InlineKeyboardButtons != nil {
+		tgMsg.ReplyMarkup = convertToTgInlineKeyboard(msg.InlineKeyboardButtons)
+	}
+
+	_, err := c.client.Send(tgMsg)
+	if err != nil {
+		return errors.WithMessage(err, "client.Send")
+	}
+
+	return nil
+}
+
+func (c *Client) ListenUpdates(ctx context.Context, msgModel *messages.Model) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
 	updates := c.client.GetUpdatesChan(u)
 
-	log.Println("listening for messages")
+	c.l.Println("listening for messages")
 
-	for update := range updates {
-		if update.Message != nil {
-			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+	for {
+		select {
+		case update := <-updates:
+			msg, ok := convertToMessage(update)
+			if ok {
+				c.l.Printf("[%s] text: %s, callback_data: %s", msg.UserName, msg.Text, msg.CallbackData)
+				err := msgModel.IncomingMessage(msg)
 
-			err := msgModel.IncomingMessage(messages.Message{
-				Text:   update.Message.Text,
-				UserID: update.Message.From.ID,
-			})
-			if err != nil {
-				log.Println("error processing message:", err)
+				if err != nil {
+					c.l.Println("error processing message:", err)
+				}
 			}
+		case <-ctx.Done():
+			log.Println("ListenUpdates: exiting due to ctx.Done()")
+			return
 		}
 	}
 }
