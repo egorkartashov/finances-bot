@@ -35,17 +35,31 @@ func (m *MockMessageSender) EXPECT() *MockMessageSenderMockRecorder {
 }
 
 // SendMessage mocks base method.
-func (m *MockMessageSender) SendMessage(text string, userID int64) error {
+func (m *MockMessageSender) SendMessage(userID int64, msg messages.Message) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendMessage", text, userID)
+	ret := m.ctrl.Call(m, "SendMessage", userID, msg)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SendMessage indicates an expected call of SendMessage.
-func (mr *MockMessageSenderMockRecorder) SendMessage(text, userID interface{}) *gomock.Call {
+func (mr *MockMessageSenderMockRecorder) SendMessage(userID, msg interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMessage", reflect.TypeOf((*MockMessageSender)(nil).SendMessage), text, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMessage", reflect.TypeOf((*MockMessageSender)(nil).SendMessage), userID, msg)
+}
+
+// SendText mocks base method.
+func (m *MockMessageSender) SendText(text string, userID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SendText", text, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SendText indicates an expected call of SendText.
+func (mr *MockMessageSenderMockRecorder) SendText(text, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendText", reflect.TypeOf((*MockMessageSender)(nil).SendText), text, userID)
 }
 
 // MockMessageHandler is a mock of MessageHandler interface.
@@ -72,10 +86,10 @@ func (m *MockMessageHandler) EXPECT() *MockMessageHandlerMockRecorder {
 }
 
 // Handle mocks base method.
-func (m *MockMessageHandler) Handle(msg messages.Message) messages.MessageHandleResult {
+func (m *MockMessageHandler) Handle(msg messages.Message) messages.HandleResult {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Handle", msg)
-	ret0, _ := ret[0].(messages.MessageHandleResult)
+	ret0, _ := ret[0].(messages.HandleResult)
 	return ret0
 }
 

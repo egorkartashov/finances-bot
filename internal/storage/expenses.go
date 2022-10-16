@@ -19,42 +19,28 @@ func NewExpenses() *Expenses {
 	}
 }
 
-func (s *Expenses) AddExpense(userID int64, exp expenses.Expense) {
+func (s *Expenses) AddExpense(userID int64, exp expenses.Expense) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	s.expensesMap[userID] = append(s.expensesMap[userID], exp)
+	return nil
 }
 
-func (s *Expenses) GetCategoriesTotals(userID int64, minTime time.Time) []expenses.CategoryTotal {
+func (s *Expenses) GetExpenses(userID int64, minTime time.Time) ([]expenses.Expense, error) {
 	s.mutex.Lock()
 	expensesCopy, ok := s.expensesMap[userID]
 	s.mutex.Unlock()
 
 	if !ok {
-		return nil
+		return nil, nil
 	}
 
-	totalCounters := make(map[string]int32)
-	for _, expense := range expensesCopy {
-		if expense.Date.Before(minTime) {
+	filteredExp := make([]expenses.Expense, 0, len(expensesCopy))
+	for _, e := range expensesCopy {
+		if e.Date.Before(minTime) {
 			continue
 		}
-		if _, ok := totalCounters[expense.Category]; !ok {
-			totalCounters[expense.Category] = expense.SumRub
-		} else {
-			totalCounters[expense.Category] += expense.SumRub
-		}
+		filteredExp = append(filteredExp, e)
 	}
-
-	categoriesTotals := make([]expenses.CategoryTotal, len(totalCounters))
-	i := 0
-	for cat, total := range totalCounters {
-		categoriesTotals[i] = expenses.CategoryTotal{
-			Category:    cat,
-			TotalSumRub: total,
-		}
-		i += 1
-	}
-
-	return categoriesTotals
+	return filteredExp, nil
 }

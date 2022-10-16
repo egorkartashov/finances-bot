@@ -10,7 +10,8 @@ import (
 const configFile = "data/config.yaml"
 
 type Config struct {
-	Token string `yaml:"token"`
+	Token                string `yaml:"token"`
+	RateFetchFreqMinutes int    `yaml:"rateFetchFreqMinutes"`
 }
 
 type Service struct {
@@ -35,4 +36,8 @@ func New() (*Service, error) {
 
 func (s *Service) Token() string {
 	return s.config.Token
+}
+
+func (s *Service) RateFetchFreqMinutes() int {
+	return s.config.RateFetchFreqMinutes
 }

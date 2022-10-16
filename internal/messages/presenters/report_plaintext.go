@@ -21,7 +21,8 @@ func (p *Report) ReportToPlainText(report *expenses.Report) string {
 
 	var sb strings.Builder
 	for i, e := range report.Entries {
-		line := fmt.Sprintf("%v. %s: %v руб.\n", i+1, e.Category, e.TotalSumKop)
+		roundedSum := e.TotalSum.Round(2)
+		line := fmt.Sprintf("%v. %s: %v %s \n", i+1, e.Category, roundedSum, report.Cur)
 		sb.WriteString(line)
 	}
 

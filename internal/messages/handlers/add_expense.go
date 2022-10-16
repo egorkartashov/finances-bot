@@ -12,13 +12,13 @@ import (
 )
 
 type AddExpense struct {
-	expenses *expenses.Model
+	expensesUc *expenses.Usecase
 	base
 }
 
-func NewAddExpense(expensesModel *expenses.Model, sender messages.MessageSender) *AddExpense {
+func NewAddExpense(expensesUc *expenses.Usecase, sender messages.MessageSender) *AddExpense {
 	return &AddExpense{
-		expenses: expensesModel,
+		expensesUc: expensesUc,
 		base: base{
 			messageSender: sender,
 		},
@@ -39,31 +39,34 @@ var (
 	incorrectDateErr        = errors.New("expense: failed to parse date")
 )
 
-func (h *AddExpense) Handle(msg messages.Message) messages.MessageHandleResult {
+func (h *AddExpense) Handle(msg messages.Message) messages.HandleResult {
 	if !strings.HasPrefix(msg.Text, expenseKeyword) {
-		return messages.MessageHandleResult{Skipped: true, Err: nil}
+		return handleSkipped
 	}
 
 	expenseParams := strings.TrimPrefix(msg.Text, expenseKeyword)
 	expenseParams = strings.Trim(expenseParams, " ")
 	exp, err := parseExpense(expenseParams)
 	if err != nil {
-		err := h.messageSender.SendMessage(incorrectFormatMessage, msg.UserID)
-		return messages.MessageHandleResult{Skipped: false, Err: err}
+		err := h.messageSender.SendText(incorrectFormatMessage, msg.UserID)
+		return handleWithErrorOrNil(err)
 	}
 
-	h.expenses.AddExpense(msg.UserID, *exp)
+	res, err := h.expensesUc.AddExpense(msg.UserID, *exp)
+	if err != nil {
+		return handleWithErrorOrNil(err)
+	}
 
-	dateStr := exp.Date.Format("02.01.2006")
-	successMsg := fmt.Sprintf("Успешно добавили трату: категория \"%s\", сумма %v руб., дата %s",
-		exp.Category, exp.SumRub, dateStr)
+	dateStr := res.Date.Format("02.01.2006")
+	successMsg := fmt.Sprintf("Успешно добавили трату: категория \"%s\", сумма %v %s, дата %s",
+		res.Category, res.Sum, res.Cur, dateStr)
 
-	err = h.messageSender.SendMessage(successMsg, msg.UserID)
+	err = h.messageSender.SendText(successMsg, msg.UserID)
 
-	return messages.MessageHandleResult{Skipped: false, Err: err}
+	return handleWithErrorOrNil(err)
 }
 
-func parseExpense(paramsStr string) (*expenses.Expense, error) {
+func parseExpense(paramsStr string) (*expenses.AddExpenseDto, error) {
 	params := strings.Split(paramsStr, " ")
 	if len(params) < 2 || len(params) > 3 {
 		return nil, incorrectParamsCountErr
@@ -80,9 +83,9 @@ func parseExpense(paramsStr string) (*expenses.Expense, error) {
 		return nil, incorrectDateErr
 	}
 
-	return &expenses.Expense{
+	return &expenses.AddExpenseDto{
 		Category: category,
-		SumRub:   int32(sum),
+		Sum:      int32(sum),
 		Date:     date,
 	}, nil
 }
@@ -98,5 +101,5 @@ func parseDate(params []string) (time.Time, error) {
 }
 
 func (h *AddExpense) Name() string {
-	return "AddExpenseHandler"
+	return "AddExpense"
 }
