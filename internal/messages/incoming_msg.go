@@ -2,6 +2,8 @@
 package messages
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 )
 
@@ -11,19 +13,19 @@ type MessageSender interface {
 }
 
 type MessageHandler interface {
-	Handle(msg Message) HandleResult
+	Handle(ctx context.Context, msg Message) HandleResult
 	Name() string
 }
 
 type Model struct {
-	tgClient MessageSender
-	handlers []MessageHandler
+	messageSender MessageSender
+	handlers      []MessageHandler
 }
 
 func New(tgClient MessageSender, handlers []MessageHandler) *Model {
 	return &Model{
-		tgClient: tgClient,
-		handlers: handlers,
+		messageSender: tgClient,
+		handlers:      handlers,
 	}
 }
 
@@ -49,15 +51,16 @@ const UnknownCommandMessage = "не знаю эту команду"
 
 func (m *Model) IncomingMessage(msg Message) error {
 	for _, h := range m.handlers {
-		res := h.Handle(msg)
+		res := h.Handle(context.Background(), msg)
 		if res.Skipped {
 			continue
 		}
 		if res.Err != nil {
-			return errors.WithMessage(res.Err, "IncomingMessage: error in "+h.Name())
+			_ = m.messageSender.SendText("Что-то сломалось :o", msg.UserID)
+			return errors.WithMessage(res.Err, "IncomingMessage: error in "+h.Name()+" handler")
 		}
 		return nil
 	}
 
-	return m.tgClient.SendText(UnknownCommandMessage, msg.UserID)
+	return m.messageSender.SendText(UnknownCommandMessage, msg.UserID)
 }

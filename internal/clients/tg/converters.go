@@ -1,5 +1,6 @@
 package tg
 
+//goland:noinspection SpellCheckingInspection
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"

@@ -1,9 +1,13 @@
 package handlers
 
 import (
+	"context"
+
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/currency"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/callbacks"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/utils"
 )
 
 type GetCurrencyOptions struct {
@@ -12,12 +16,12 @@ type GetCurrencyOptions struct {
 
 const changeCurrencyCommand = "/change_currency"
 
-func (g *GetCurrencyOptions) Handle(msg messages.Message) messages.HandleResult {
+func (g *GetCurrencyOptions) Handle(_ context.Context, msg messages.Message) messages.HandleResult {
 	if msg.Text != changeCurrencyCommand {
-		return handleSkipped
+		return utils.HandleSkipped
 	}
 
-	currencies := []currency.Currency{currency.RUB, currency.EUR, currency.USD, currency.CNY}
+	currencies := []entities.Currency{currency.RUB, currency.EUR, currency.USD, currency.CNY}
 
 	buttons := make([][]messages.InlineKeyboardButton, len(currencies))
 	for i, cur := range currencies {
@@ -32,7 +36,7 @@ func (g *GetCurrencyOptions) Handle(msg messages.Message) messages.HandleResult 
 	}
 
 	err := g.sender.SendMessage(msg.UserID, resp)
-	return handleWithErrorOrNil(err)
+	return utils.HandleWithErrorOrNil(err)
 }
 
 func (g *GetCurrencyOptions) Name() string {

@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"context"
 	"strings"
 
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/expenses"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/utils"
 )
 
 type ReportPresenter interface {
@@ -27,6 +29,7 @@ func NewReport(expenses *expenses.Usecase, presenter ReportPresenter, sender mes
 
 const (
 	ReportFormatMessage    = "отчет <период>, где период может быть одним из значений: неделя, месяц, год"
+	ReportHelp             = "Чтобы получить отчет, введи команду: " + ReportFormatMessage
 	IncorrectFormatMessage = "Неизвестный период отчета. Корректный формат: " + ReportFormatMessage
 )
 
@@ -39,7 +42,7 @@ var (
 	}
 )
 
-func (h *Report) Handle(msg messages.Message) messages.HandleResult {
+func (h *Report) Handle(ctx context.Context, msg messages.Message) messages.HandleResult {
 	foundKw := ""
 	for _, kw := range reportKeywords {
 		if strings.HasPrefix(msg.Text, kw) {
@@ -48,26 +51,25 @@ func (h *Report) Handle(msg messages.Message) messages.HandleResult {
 	}
 
 	if foundKw == "" {
-		return handleSkipped
+		return utils.HandleSkipped
 	}
 
 	params := strings.TrimPrefix(msg.Text, foundKw)
 	params = strings.Trim(params, " ")
 	reportPeriod, ok := keywordToPeriod[params]
 	if !ok {
-		err := h.messageSender.SendText(IncorrectFormatMessage, msg.UserID)
-		return handleWithErrorOrNil(err)
+		err := h.MessageSender.SendText(IncorrectFormatMessage, msg.UserID)
+		return utils.HandleWithErrorOrNil(err)
 	}
 
-	report, err := h.expenses.GenerateReport(msg.UserID, reportPeriod)
+	report, err := h.expenses.GenerateReport(ctx, msg.UserID, reportPeriod)
 	if err != nil {
-		err := h.messageSender.SendText("Что-то пошло не так", msg.UserID)
-		return handleWithErrorOrNil(err)
+		return utils.HandleWithErrorOrNil(err)
 	}
 
 	reportStr := h.presenter.ReportToPlainText(report)
-	err = h.messageSender.SendText(reportStr, msg.UserID)
-	return handleWithErrorOrNil(err)
+	err = h.MessageSender.SendText(reportStr, msg.UserID)
+	return utils.HandleWithErrorOrNil(err)
 }
 
 func (h *Report) Name() string {
