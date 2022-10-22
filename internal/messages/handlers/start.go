@@ -1,31 +1,49 @@
 package handlers
 
 import (
+	"context"
+	"strings"
+
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/remove_limit"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/set_limit"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/utils"
 )
 
 type Start struct {
 	base
+	userUc userUc
 }
 
-func NewStart(sender messages.MessageSender) *Start {
+func NewStart(userUc userUc, sender messages.MessageSender) *Start {
 	return &Start{
-		base: base{sender},
+		userUc: userUc,
+		base:   base{sender},
 	}
 }
 
-const welcomeMessage = "Привет! Я - телеграм бот для учета финансов. \n" +
-	"Пока я могу только сохранять твои траты и формировать отчет по сумма трат по категориям. \n\n" +
-	"Чтобы добавить трату, введи ее в следующем формате: " + ExpenseFormat + "\n\n" +
-	"Чтобы получить отчет, введи команду: " + ReportFormatMessage
+var (
+	helpMessages    = []string{AddExpenseHelp, ReportHelp, set_limit.AddLimitHelp, remove_limit.RemoveLimitHelp}
+	welcomeMessage1 = "Привет! Я - телеграм бот для учета финансов. Вот, что я могу:" + helpSeparator +
+		strings.Join(helpMessages, helpSeparator)
+)
 
-func (h *Start) Handle(msg messages.Message) messages.HandleResult {
+const (
+	helpSeparator = "\n\n"
+)
+
+func (h *Start) Handle(ctx context.Context, msg messages.Message) messages.HandleResult {
 	if msg.Text != "/start" {
-		return handleSkipped
+		return utils.HandleSkipped
 	}
 
-	err := h.messageSender.SendText(welcomeMessage, msg.UserID)
-	return handleWithErrorOrNil(err)
+	err := h.userUc.Register(ctx, msg.UserID)
+	if err != nil {
+		return utils.HandleWithErrorOrNil(err)
+	}
+
+	err = h.MessageSender.SendText(welcomeMessage1, msg.UserID)
+	return utils.HandleWithErrorOrNil(err)
 }
 
 func (h *Start) Name() string {

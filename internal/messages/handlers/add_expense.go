@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -8,7 +9,9 @@ import (
 
 	"github.com/pkg/errors"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/expenses"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/limits"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/utils"
 )
 
 type AddExpense struct {
@@ -20,17 +23,18 @@ func NewAddExpense(expensesUc *expenses.Usecase, sender messages.MessageSender) 
 	return &AddExpense{
 		expensesUc: expensesUc,
 		base: base{
-			messageSender: sender,
+			MessageSender: sender,
 		},
 	}
 }
 
 const (
-	expenseKeyword = "трата"
-	ExpenseFormat  = "трата <категория> <сумма в руб.> [<дата ДД.ММ.ГГГГ>]. \n" +
+	expenseKeyword   = "трата"
+	AddExpenseFormat = "трата <категория> <сумма> [<дата ДД.ММ.ГГГГ>]. \n" +
 		"Например: трата продукты 310 15.01.2022. Если дата не указана, то трата сохранится за сегодняшний день"
+	AddExpenseHelp         = "Чтобы добавить трату, введи ее в следующем формате: \n" + AddExpenseFormat
 	incorrectFormatMessage = "Трата введена в некорректном формате. " +
-		"Правильный формат: " + ExpenseFormat
+		"Правильный формат: " + AddExpenseFormat
 )
 
 var (
@@ -39,31 +43,28 @@ var (
 	incorrectDateErr        = errors.New("expense: failed to parse date")
 )
 
-func (h *AddExpense) Handle(msg messages.Message) messages.HandleResult {
+func (h *AddExpense) Handle(ctx context.Context, msg messages.Message) messages.HandleResult {
 	if !strings.HasPrefix(msg.Text, expenseKeyword) {
-		return handleSkipped
+		return utils.HandleSkipped
 	}
 
 	expenseParams := strings.TrimPrefix(msg.Text, expenseKeyword)
 	expenseParams = strings.Trim(expenseParams, " ")
 	exp, err := parseExpense(expenseParams)
 	if err != nil {
-		err := h.messageSender.SendText(incorrectFormatMessage, msg.UserID)
-		return handleWithErrorOrNil(err)
+		err := h.MessageSender.SendText(incorrectFormatMessage, msg.UserID)
+		return utils.HandleWithErrorOrNil(err)
 	}
 
-	res, err := h.expensesUc.AddExpense(msg.UserID, *exp)
+	res, err := h.expensesUc.AddExpense(ctx, msg.UserID, *exp)
 	if err != nil {
-		return handleWithErrorOrNil(err)
+		return utils.HandleWithErrorOrNil(err)
 	}
 
-	dateStr := res.Date.Format("02.01.2006")
-	successMsg := fmt.Sprintf("Успешно добавили трату: категория \"%s\", сумма %v %s, дата %s",
-		res.Category, res.Sum, res.Cur, dateStr)
+	response := constructResponse(res)
+	err = h.MessageSender.SendText(response, msg.UserID)
 
-	err = h.messageSender.SendText(successMsg, msg.UserID)
-
-	return handleWithErrorOrNil(err)
+	return utils.HandleWithErrorOrNil(err)
 }
 
 func parseExpense(paramsStr string) (*expenses.AddExpenseDto, error) {
@@ -98,6 +99,31 @@ func parseDate(params []string) (time.Time, error) {
 		year, month, day := time.Now().UTC().Date()
 		return time.Date(year, month, day, 0, 0, 0, 0, time.UTC), nil
 	}
+}
+
+func constructResponse(res expenses.AddExpenseResult) string {
+	baseCurrency := res.Rate.To
+	sumInfo := fmt.Sprintf("%v %s", res.SumInUserCurrency, res.Rate.From)
+	if res.Rate.From != baseCurrency {
+		sumInfo += fmt.Sprintf(" (%v %s)", res.Expense.Sum, baseCurrency)
+	}
+
+	dateStr := res.Expense.Date.Format("02.01.2006")
+	expenseAddedMsg := fmt.Sprintf(
+		"Успешно добавили трату: категория \"%s\", сумма %s, дата %s", res.Expense.Category, sumInfo, dateStr,
+	)
+
+	limitRes := res.LimitCheckResult
+	if limitRes.Status != limits.StatusLimitExceeded {
+		return expenseAddedMsg
+	}
+
+	limitExceededMsg := fmt.Sprintf(
+		"Превышен лимит по тратам в данной категории за месяц (лимит %v %s, потрачено %v %s), "+
+			"будьте аккуратнее со своими тратами!", limitRes.Limit, baseCurrency, limitRes.TotalSumWithNewExpense,
+		baseCurrency,
+	)
+	return limitExceededMsg + "\n\n" + expenseAddedMsg
 }
 
 func (h *AddExpense) Name() string {

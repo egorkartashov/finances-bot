@@ -1,7 +1,9 @@
 package tg
 
+//goland:noinspection SpellCheckingInspection
 import (
 	"context"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/logger"
 	"log"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -14,19 +16,16 @@ type TokenGetter interface {
 }
 
 type Client struct {
-	l      *log.Logger
 	client *tgbotapi.BotAPI
 }
 
-func New(tokenGetter TokenGetter, l *log.Logger) (*Client, error) {
+func New(tokenGetter TokenGetter) (*Client, error) {
 	client, err := tgbotapi.NewBotAPI(tokenGetter.Token())
-	client.Debug = true
 	if err != nil {
 		return nil, errors.WithMessage(err, "NewBotAPI")
 	}
 
 	return &Client{
-		l:      l,
 		client: client,
 	}, nil
 }
@@ -60,18 +59,18 @@ func (c *Client) ListenUpdates(ctx context.Context, msgModel *messages.Model) {
 
 	updates := c.client.GetUpdatesChan(u)
 
-	c.l.Println("listening for messages")
+	logger.Info("listening for messages")
 
 	for {
 		select {
 		case update := <-updates:
 			msg, ok := convertToMessage(update)
 			if ok {
-				c.l.Printf("[%s] text: %s, callback_data: %s", msg.UserName, msg.Text, msg.CallbackData)
+				logger.Infof("[%s] text: %s, callback_data: %s", msg.UserName, msg.Text, msg.CallbackData)
 				err := msgModel.IncomingMessage(msg)
 
 				if err != nil {
-					c.l.Println("error processing message:", err)
+					logger.Infof("error processing message:", err)
 				}
 			}
 		case <-ctx.Done():

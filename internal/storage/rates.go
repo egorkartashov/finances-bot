@@ -1,80 +1,67 @@
 package storage
 
 import (
-	"sync"
+	"context"
+	"database/sql"
 	"time"
 
 	"github.com/shopspring/decimal"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/currency"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
 )
 
 type Rates struct {
-	mu       *sync.RWMutex
-	ratesMap map[currency.Currency]map[time.Time]decimal.Decimal
-	nextID   int32
+	db dbTxStorage
 }
 
-func NewRates() (*Rates, error) {
-	r := &Rates{
-		ratesMap: make(map[currency.Currency]map[time.Time]decimal.Decimal),
-		nextID:   1,
-		mu:       new(sync.RWMutex),
-	}
-
-	err := r.AddRate(currency.Rate{
-		From:  currency.RUB,
-		To:    currency.RUB,
-		Value: decimal.NewFromInt32(1),
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return r, nil
+func NewRates(db dbTxStorage) *Rates {
+	return &Rates{db}
 }
 
-func (r *Rates) AddRates(rates []currency.Rate) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+type rateModel struct {
+	ID           int32           `db:"id"`
+	FromCurrency string          `db:"from_currency"`
+	Rate         decimal.Decimal `db:"rate"`
+	Date         string          `db:"date"`
+}
 
-	for _, rate := range rates {
-		if err := r.addRateNoLock(rate); err != nil {
-			return err
+func (r *Rates) AddRates(ctx context.Context, rates []entities.Rate) (err error) {
+	models := make([]rateModel, len(rates))
+	for i, rate := range rates {
+		models[i] = rateModel{
+			FromCurrency: string(rate.From),
+			Rate:         rate.Value,
+			Date:         rate.Date.Format("2006-01-02"),
 		}
 	}
-	return nil
-}
 
-func (r *Rates) AddRate(newRate currency.Rate) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	const insertQuery = `
+INSERT INTO exchange_rates_to_rub(rate, from_currency, date) 
+VALUES (:rate, :from_currency, :date)
+ON CONFLICT DO NOTHING`
 
-	return r.addRateNoLock(newRate)
-}
-
-func (r *Rates) addRateNoLock(rate currency.Rate) (err error) {
-	err = nil
-	_, ok := r.ratesMap[rate.From]
-	if ok {
-		r.ratesMap[rate.From][rate.Date] = rate.Value
-	} else {
-		r.ratesMap[rate.From] = map[time.Time]decimal.Decimal{rate.Date: rate.Value}
+	if _, err = r.db.Db(ctx).NamedExecContext(ctx, insertQuery, models); err != nil {
+		return err
 	}
-	return
+
+	return err
 }
 
-func (r *Rates) GetRate(from currency.Currency, date time.Time) (rate decimal.Decimal, ok bool, err error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+func (r *Rates) GetRate(ctx context.Context, from entities.Currency, date time.Time) (
+	rate decimal.Decimal, ok bool, err error,
+) {
+	const query = `SELECT * FROM exchange_rates_to_rub WHERE from_currency = $1 AND date = $2`
 
-	err = nil
-
-	if _, ok = r.ratesMap[from]; !ok {
-		ok = false
+	var model rateModel
+	if err = r.db.Db(ctx).GetContext(ctx, &model, query, from, date); err != nil {
+		if err == sql.ErrNoRows {
+			err = nil
+			ok = false
+		}
 		return
 	}
 
-	rate, ok = r.ratesMap[from][date]
+	rate = model.Rate
+	ok = true
+
 	return
 }

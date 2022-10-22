@@ -7,6 +7,11 @@ LINTVER=v1.49.0
 LINTBIN=${BINDIR}/lint_${GOVER}_${LINTVER}
 PACKAGE=gitlab.ozon.dev/egor.linkinked/kartashov-egor/cmd/bot
 
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
+
 all: format build test lint
 
 build: bindir
@@ -48,5 +53,11 @@ install-smartimports: bindir
 		(GOBIN=${BINDIR} go install github.com/pav5000/smartimports/cmd/smartimports@latest && \
 		mv ${BINDIR}/smartimports ${SMARTIMPORTS})
 
-docker-run:
-	sudo docker compose up
+docker-up:
+	docker compose up -d
+
+migrate-up:
+	goose --dir migrations postgres ${GOOSE_DB_DSN} up
+
+migrate-down:
+	goose --dir migrations postgres ${GOOSE_DB_DSN} down

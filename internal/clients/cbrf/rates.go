@@ -1,20 +1,24 @@
 package cbrf
 
 import (
+	"context"
 	"net/http"
 	"time"
 
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/currency"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
 )
 
 type RatesApi struct {
 }
 
-func (r *RatesApi) FetchRatesToRub(currencies []currency.Currency, at time.Time) ([]currency.Rate, error) {
+func (r *RatesApi) FetchRatesToRub(ctx context.Context, currencies []entities.Currency, at time.Time) (
+	[]entities.Rate, error,
+) {
 	dateStr := at.Format("02/01/2006")
 	url := "https://www.cbr.ru/scripts/XML_daily.asp?date_req=" + dateStr
 
-	res, err := http.Get(url)
+	req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

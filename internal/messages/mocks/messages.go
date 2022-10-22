@@ -86,7 +86,7 @@ func (m *MockMessageHandler) EXPECT() *MockMessageHandlerMockRecorder {
 }
 
 // Handle mocks base method.
-func (m *MockMessageHandler) Handle(msg messages.Message) messages.HandleResult {
+func (m *MockMessageHandler) Handle(msg messages.Message, ctx interface{}) messages.HandleResult {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Handle", msg)
 	ret0, _ := ret[0].(messages.HandleResult)

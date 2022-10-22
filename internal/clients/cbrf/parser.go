@@ -8,6 +8,7 @@ import (
 
 	"github.com/shopspring/decimal"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/currency"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
 	"golang.org/x/net/html/charset"
 )
 
@@ -22,7 +23,7 @@ type Valute struct {
 	Value    string   `xml:"Value"`
 }
 
-func Parse(xmlStream io.Reader, currencies []currency.Currency, at time.Time) ([]currency.Rate, error) {
+func Parse(xmlStream io.Reader, currencies []entities.Currency, at time.Time) ([]entities.Rate, error) {
 	currSet := make(map[string]struct{})
 	for _, cur := range currencies {
 		currSet[string(cur)] = struct{}{}
@@ -35,7 +36,7 @@ func Parse(xmlStream io.Reader, currencies []currency.Currency, at time.Time) ([
 		return nil, err
 	}
 
-	rates := make([]currency.Rate, 0, len(currencies))
+	rates := make([]entities.Rate, 0, len(currencies))
 	for _, valute := range valCurs.Valutes {
 		if _, ok := currSet[valute.CharCode]; !ok {
 			continue
@@ -47,8 +48,8 @@ func Parse(xmlStream io.Reader, currencies []currency.Currency, at time.Time) ([
 			return nil, err
 		}
 
-		rate := currency.Rate{
-			From:  currency.Currency(valute.CharCode),
+		rate := entities.Rate{
+			From:  entities.Currency(valute.CharCode),
 			To:    currency.RUB,
 			Value: value,
 			Date:  at,

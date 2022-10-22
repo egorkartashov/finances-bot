@@ -1,10 +1,10 @@
 package currency
 
-type Currency string
+import "gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
 
 const (
-	RUB Currency = "RUB"
-	EUR Currency = "EUR"
-	CNY Currency = "CNY"
-	USD Currency = "USD"
+	RUB entities.Currency = "RUB"
+	EUR entities.Currency = "EUR"
+	CNY entities.Currency = "CNY"
+	USD entities.Currency = "USD"
 )

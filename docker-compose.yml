@@ -1,0 +1,17 @@
+version: '3.9'
+name: finance-bot
+services:
+  db:
+    image: postgres:14-alpine
+    container_name: finances-bot-db
+    restart: always
+    ports:
+      - '9432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: example
+
+
+volumes:
+  db-data:

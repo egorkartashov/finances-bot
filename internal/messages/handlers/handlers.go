@@ -1,15 +1,14 @@
 package handlers
 
-import "gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
+import (
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/remove_limit"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/set_limit"
+)
 
 type base struct {
-	messageSender messages.MessageSender
+	MessageSender messages.MessageSender
 }
 
-func handleWithErrorOrNil(err error) messages.HandleResult {
-	return messages.HandleResult{Skipped: false, Err: err}
-}
-
-var (
-	handleSkipped = messages.HandleResult{Skipped: true, Err: nil}
-)
+var NewSetLimit = set_limit.NewSetLimit
+var NewRemoveLimit = remove_limit.NewRemoveLimit

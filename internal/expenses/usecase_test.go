@@ -43,7 +43,7 @@ package expenses_test
 //
 //			expense := expenses.Expense{
 //				Category: tc.category,
-//				Sum:   tc.sum,
+//				SumInUserCurrency:   tc.sum,
 //				Date:     tc.date,
 //			}
 //

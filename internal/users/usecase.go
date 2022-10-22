@@ -1,48 +1,64 @@
 package users
 
 import (
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/currency"
+	"context"
+
+	"github.com/pkg/errors"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
 )
 
 type userStorage interface {
-	Save(user User) error
-	Get(id int64) (u User, ok bool, err error)
+	Save(ctx context.Context, user entities.User) error
+	Get(ctx context.Context, id int64) (u entities.User, ok bool, err error)
+}
+
+type cfg interface {
+	BaseCurrency() entities.Currency
 }
 
 type Usecase struct {
+	cfg     cfg
 	storage userStorage
 }
 
-func NewUsecase(storage userStorage) *Usecase {
-	return &Usecase{storage}
+func NewUsecase(cfg cfg, storage userStorage) *Usecase {
+	return &Usecase{
+		cfg:     cfg,
+		storage: storage,
+	}
 }
 
-func (u *Usecase) GetOrRegister(userID int64) (user User, err error) {
-	user, ok, err := u.storage.Get(userID)
+func (u *Usecase) Register(ctx context.Context, userID int64) (err error) {
+	_, ok, err := u.storage.Get(ctx, userID)
 	if err != nil {
+		err = errors.WithMessage(err, "Register")
+		return
+	}
+	if ok {
 		return
 	}
 
-	if !ok {
-		user = User{
-			id:       userID,
-			Currency: currency.RUB,
-		}
-		err = u.storage.Save(user)
-		if err != nil {
-			return
-		}
+	user := entities.User{
+		ID:       userID,
+		Currency: u.cfg.BaseCurrency(),
 	}
-
-	return user, nil
+	err = u.storage.Save(ctx, user)
+	if err != nil {
+		err = errors.WithMessage(err, "Register")
+		return
+	}
+	return
 }
 
-func (u *Usecase) SetCurrency(userID int64, curr currency.Currency) error {
-	user, err := u.GetOrRegister(userID)
+func (u *Usecase) SetCurrency(ctx context.Context, userID int64, curr entities.Currency) error {
+	user, ok, err := u.storage.Get(ctx, userID)
 	if err != nil {
 		return err
 	}
+	if !ok {
+		return NewUserNotFoundErr(userID)
+	}
 
 	user.Currency = curr
-	return u.storage.Save(user)
+	return u.storage.Save(ctx, user)
 }
