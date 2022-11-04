@@ -33,7 +33,7 @@ func (u *Usecase) AddExpense(outsideCtx context.Context, userID int64, expDto Ad
 
 			// Пока просто сохраняем статус проверки лимита, т.к. запрещать вводить трату не будем.
 			// Если лимит превышен, просто сообщим об этом пользователю
-			limitStatus, err := u.limitUc.CheckLimit(ctx, userID, expense)
+			limitCheckResult, err := u.limitUc.CheckLimit(ctx, userID, expense)
 			if err != nil {
 				return err
 			}
@@ -46,7 +46,7 @@ func (u *Usecase) AddExpense(outsideCtx context.Context, userID int64, expDto Ad
 				SumInUserCurrency: expDto.Sum,
 				Expense:           expense,
 				Rate:              rate,
-				LimitCheckResult:  limitStatus,
+				LimitCheckResult:  limitCheckResult,
 			}
 			return nil
 		},

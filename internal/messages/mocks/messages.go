@@ -5,6 +5,7 @@
 package messages_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -86,21 +87,58 @@ func (m *MockMessageHandler) EXPECT() *MockMessageHandlerMockRecorder {
 }
 
 // Handle mocks base method.
-func (m *MockMessageHandler) Handle(msg messages.Message, ctx interface{}) messages.HandleResult {
+func (m *MockMessageHandler) Handle(ctx context.Context, msg messages.Message) messages.HandleResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Handle", msg)
+	ret := m.ctrl.Call(m, "Handle", ctx, msg)
 	ret0, _ := ret[0].(messages.HandleResult)
 	return ret0
 }
 
 // Handle indicates an expected call of Handle.
-func (mr *MockMessageHandlerMockRecorder) Handle(msg interface{}) *gomock.Call {
+func (mr *MockMessageHandlerMockRecorder) Handle(ctx, msg interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Handle", reflect.TypeOf((*MockMessageHandler)(nil).Handle), msg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Handle", reflect.TypeOf((*MockMessageHandler)(nil).Handle), ctx, msg)
+}
+
+// MockNamedHandler is a mock of NamedHandler interface.
+type MockNamedHandler struct {
+	ctrl     *gomock.Controller
+	recorder *MockNamedHandlerMockRecorder
+}
+
+// MockNamedHandlerMockRecorder is the mock recorder for MockNamedHandler.
+type MockNamedHandlerMockRecorder struct {
+	mock *MockNamedHandler
+}
+
+// NewMockNamedHandler creates a new mock instance.
+func NewMockNamedHandler(ctrl *gomock.Controller) *MockNamedHandler {
+	mock := &MockNamedHandler{ctrl: ctrl}
+	mock.recorder = &MockNamedHandlerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockNamedHandler) EXPECT() *MockNamedHandlerMockRecorder {
+	return m.recorder
+}
+
+// Handle mocks base method.
+func (m *MockNamedHandler) Handle(ctx context.Context, msg messages.Message) messages.HandleResult {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Handle", ctx, msg)
+	ret0, _ := ret[0].(messages.HandleResult)
+	return ret0
+}
+
+// Handle indicates an expected call of Handle.
+func (mr *MockNamedHandlerMockRecorder) Handle(ctx, msg interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Handle", reflect.TypeOf((*MockNamedHandler)(nil).Handle), ctx, msg)
 }
 
 // Name mocks base method.
-func (m *MockMessageHandler) Name() string {
+func (m *MockNamedHandler) Name() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Name")
 	ret0, _ := ret[0].(string)
@@ -108,7 +146,7 @@ func (m *MockMessageHandler) Name() string {
 }
 
 // Name indicates an expected call of Name.
-func (mr *MockMessageHandlerMockRecorder) Name() *gomock.Call {
+func (mr *MockNamedHandlerMockRecorder) Name() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Name", reflect.TypeOf((*MockMessageHandler)(nil).Name))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Name", reflect.TypeOf((*MockNamedHandler)(nil).Name))
 }

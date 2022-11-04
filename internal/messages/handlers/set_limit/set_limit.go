@@ -3,7 +3,6 @@ package set_limit
 import (
 	"context"
 	"fmt"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/logger"
 	"strconv"
 	"strings"
 	"time"
@@ -12,8 +11,10 @@ import (
 	"github.com/shopspring/decimal"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/limits"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/logger"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/utils"
+	"go.uber.org/zap"
 )
 
 type SetLimit struct {
@@ -79,7 +80,7 @@ func (h *SetLimit) parseLimit(params string, userID int64, date time.Time) (
 	if convErr != nil {
 		errMsg := "Сумма лимита не является корректным целым числом"
 		err = errors.New(errMsg)
-		logger.Errorf(errMsg+": %s", convErr)
+		logger.Error(errMsg, zap.Error(convErr))
 		return
 	}
 

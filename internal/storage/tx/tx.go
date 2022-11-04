@@ -3,10 +3,11 @@ package tx
 import (
 	"context"
 	"fmt"
+
 	"github.com/jmoiron/sqlx"
-	"github.com/pkg/errors"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/logger"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/storage"
+	"go.uber.org/zap"
 )
 
 type contextTxKeyType string
@@ -57,7 +58,7 @@ func (s *Storage) WithTransaction(ctx context.Context, fn func(context.Context) 
 
 func tryRollback(tx *sqlx.Tx) {
 	if err := tx.Rollback(); err != nil {
-		logger.Error(errors.WithMessage(err, "failed to rollback"))
+		logger.Error("failed to rollback", zap.Error(err))
 	}
 }
 

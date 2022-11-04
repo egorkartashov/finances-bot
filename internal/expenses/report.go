@@ -3,12 +3,12 @@ package expenses
 import (
 	"context"
 	"fmt"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/users"
 	"sort"
 	"time"
 
 	"github.com/shopspring/decimal"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/users"
 )
 
 type ReportPeriod byte
@@ -42,7 +42,7 @@ func (u *Usecase) GenerateReport(ctx context.Context, userID int64, reportPeriod
 		return
 	}
 
-	user, ok, err := u.userUc.Get(ctx, userID)
+	user, ok, err := u.userStorage.Get(ctx, userID)
 	if err != nil {
 		return
 	}

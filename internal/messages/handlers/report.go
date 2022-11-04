@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/opentracing/opentracing-go"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/expenses"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/utils"
@@ -54,9 +55,13 @@ func (h *Report) Handle(ctx context.Context, msg messages.Message) messages.Hand
 		return utils.HandleSkipped
 	}
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "report")
+	defer span.Finish()
+
 	params := strings.TrimPrefix(msg.Text, foundKw)
 	params = strings.Trim(params, " ")
 	reportPeriod, ok := keywordToPeriod[params]
+	span.SetTag("report-period", reportPeriod)
 	if !ok {
 		err := h.MessageSender.SendText(IncorrectFormatMessage, msg.UserID)
 		return utils.HandleWithErrorOrNil(err)

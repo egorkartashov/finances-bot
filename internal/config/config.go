@@ -9,13 +9,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const configFile = "data/config.yaml"
+const configFile = "configs/config.yaml"
 
 type Config struct {
 	Token                string `yaml:"token"`
 	RateFetchFreqMinutes int    `yaml:"rateFetchFreqMinutes"`
 	Dsn                  string `env:"FINANCES_DSN"`
 	BaseCurrency         entities.Currency
+	ServiceName          string `yaml:"serviceName"`
 }
 
 type Service struct {
@@ -26,6 +27,7 @@ func New(baseCurr entities.Currency) (*Service, error) {
 	s := &Service{
 		config: Config{
 			BaseCurrency: baseCurr,
+			ServiceName:  "finances-bot",
 		},
 	}
 
@@ -61,4 +63,8 @@ func (s *Service) Dsn() string {
 
 func (s *Service) BaseCurrency() entities.Currency {
 	return s.config.BaseCurrency
+}
+
+func (s *Service) ServiceName() string {
+	return s.config.ServiceName
 }

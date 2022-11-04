@@ -43,8 +43,7 @@ func (u *Usecase) CheckLimit(ctx context.Context, userID int64, expense entities
 	sumWithNewExpense := expensesSum.Add(expense.Sum)
 
 	res.Limit = limit.Sum
-	res.TotalSumWithoutNewExpense = expensesSum
-	res.TotalSumWithNewExpense = sumWithNewExpense
+	res.CurrentTotalSum = expensesSum
 
 	if sumWithNewExpense.LessThanOrEqual(limit.Sum) {
 		res.Status = StatusLimitSatisfied

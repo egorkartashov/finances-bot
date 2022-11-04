@@ -118,9 +118,10 @@ func constructResponse(res expenses.AddExpenseResult) string {
 		return expenseAddedMsg
 	}
 
+	totalSumWithNewExpense := res.LimitCheckResult.CurrentTotalSum.Add(res.Expense.Sum)
 	limitExceededMsg := fmt.Sprintf(
 		"Превышен лимит по тратам в данной категории за месяц (лимит %v %s, потрачено %v %s), "+
-			"будьте аккуратнее со своими тратами!", limitRes.Limit, baseCurrency, limitRes.TotalSumWithNewExpense,
+			"будьте аккуратнее со своими тратами!", limitRes.Limit, baseCurrency, totalSumWithNewExpense,
 		baseCurrency,
 	)
 	return limitExceededMsg + "\n\n" + expenseAddedMsg

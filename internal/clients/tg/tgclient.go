@@ -3,11 +3,11 @@ package tg
 //goland:noinspection SpellCheckingInspection
 import (
 	"context"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/logger"
-	"log"
+	"sync"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/pkg/errors"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/logger"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
 )
 
@@ -58,24 +58,26 @@ func (c *Client) ListenUpdates(ctx context.Context, msgModel *messages.Model) {
 	u.Timeout = 60
 
 	updates := c.client.GetUpdatesChan(u)
+	wg := sync.WaitGroup{}
+
+	go func() {
+		<-ctx.Done()
+		c.client.StopReceivingUpdates()
+		logger.Info("ListenUpdates: stopped receiving updates due to ctx.Done()")
+	}()
 
 	logger.Info("listening for messages")
 
-	for {
-		select {
-		case update := <-updates:
-			msg, ok := convertToMessage(update)
-			if ok {
-				logger.Infof("[%s] text: %s, callback_data: %s", msg.UserName, msg.Text, msg.CallbackData)
-				err := msgModel.IncomingMessage(msg)
-
-				if err != nil {
-					logger.Infof("error processing message:", err)
-				}
-			}
-		case <-ctx.Done():
-			log.Println("ListenUpdates: exiting due to ctx.Done()")
-			return
+	for update := range updates {
+		msg, ok := convertToMessage(update)
+		if ok {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				msgModel.IncomingMessage(ctx, msg)
+			}()
 		}
 	}
+
+	wg.Wait()
 }
