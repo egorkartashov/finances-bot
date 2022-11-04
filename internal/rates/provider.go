@@ -2,13 +2,15 @@ package rates
 
 import (
 	"context"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/logger"
 	"log"
 	"time"
 
+	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/logger"
+	"go.uber.org/zap"
 )
 
 type Provider struct {
@@ -35,7 +37,7 @@ func (p *Provider) GetRate(ctx context.Context, from, to entities.Currency, date
 
 	baseCurr := p.cfg.BaseCurrency()
 	if from != baseCurr && to != baseCurr {
-		err = errors.New("from and to are equal to base curr")
+		err = errors.New("neither from nor to are equal to base curr")
 		return
 	}
 
@@ -94,13 +96,19 @@ func (p *Provider) UpdateRates(ctx context.Context, freq time.Duration, currenci
 func (p *Provider) updateRatesForNow(ctx context.Context, currencies []entities.Currency) {
 	_, err := p.updateRates(ctx, currencies, time.Now())
 	if err != nil {
-		logger.Error(err)
+		logger.Error("error updating current rates", zap.Error(err))
 	}
 }
 
 func (p *Provider) updateRates(ctx context.Context, currencies []entities.Currency, date time.Time) (
 	[]entities.Rate, error,
 ) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "updateRates")
+	defer span.Finish()
+
+	span.SetTag("date", date)
+	span.SetTag("currencies", currencies)
+
 	logger.Info("updateRates: fetching rates...")
 	rates, err := p.api.FetchRatesToRub(ctx, currencies, date)
 	if err != nil {
@@ -111,7 +119,7 @@ func (p *Provider) updateRates(ctx context.Context, currencies []entities.Curren
 	logger.Info("updateRates: rates fetched successfully, saving to storage...")
 	err = p.storage.AddRates(ctx, rates)
 	if err != nil {
-		logger.Errorf("error fetching rates: " + err.Error())
+		logger.Error("error fetching rates", zap.Error(err))
 		err = errors.WithMessage(err, "error in updateRates")
 		return nil, err
 	}

@@ -5,18 +5,19 @@ type Usecase struct {
 	tx                tx
 	expenseStorage    expenseStorage
 	currencyConverter currencyConverter
-	userUc            userUc
+	userStorage       userStorage
 	limitUc           limitUc
 }
 
 func NewUsecase(
-	cfg cfg, tx tx, expenseStorage expenseStorage, userUc userUc, currencyProvider currencyConverter, limitUc limitUc,
+	cfg cfg, tx tx, expenseStorage expenseStorage, userUc userStorage, currencyConverter currencyConverter,
+	limitUc limitUc,
 ) *Usecase {
 	return &Usecase{
 		cfg:               cfg,
 		expenseStorage:    expenseStorage,
-		userUc:            userUc,
-		currencyConverter: currencyProvider,
+		userStorage:       userUc,
+		currencyConverter: currencyConverter,
 		limitUc:           limitUc,
 		tx:                tx,
 	}

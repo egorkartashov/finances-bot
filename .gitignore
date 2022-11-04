@@ -2,8 +2,11 @@ bin/
 .vscode/
 .idea/
 data/*
-!data/config.example.yaml
+configs/*
+!configs/config.example.yaml
 **/.DS_Store
 
 **/.env
 !.env.template
+
+deployments/**/data

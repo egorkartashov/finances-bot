@@ -1,39 +1,41 @@
 package logger
 
 import (
+	"log"
+
 	"go.uber.org/zap"
 )
 
-var logger *zap.SugaredLogger
+var logger *zap.Logger
 
-func init() {
-	l, err := zap.NewDevelopment()
-	if err != nil {
-		panic("Could create logger")
+func InitLogger(devMode bool) {
+
+	var l *zap.Logger
+	var err error
+	if devMode {
+		l, err = zap.NewDevelopment()
+	} else {
+		cfg := zap.NewProductionConfig()
+		cfg.DisableCaller = true
+		l, err = cfg.Build()
 	}
 
-	logger = l.Sugar()
-	defer func(logger *zap.SugaredLogger) {
-		_ = logger.Sync()
-	}(logger)
+	if err != nil {
+		log.Fatal("Could create logger")
+	}
+
+	logger = l
+	logger.Info("devmode", zap.Bool("devmode", devMode))
 }
 
-func Info(msg string) {
-	logger.Info(msg)
+func Info(msg string, fields ...zap.Field) {
+	logger.Info(msg, fields...)
 }
 
-func Infof(msg string, args ...interface{}) {
-	logger.Infof(msg, args)
+func Error(msg string, fields ...zap.Field) {
+	logger.Error(msg, fields...)
 }
 
-func Error(args ...interface{}) {
-	logger.Error(args)
-}
-
-func Errorf(msg string, args ...interface{}) {
-	logger.Errorf(msg, args)
-}
-
-func Fatal(msg string, args ...interface{}) {
-	logger.Fatal(msg, args)
+func Fatal(msg string, fields ...zap.Field) {
+	logger.Fatal(msg, fields...)
 }

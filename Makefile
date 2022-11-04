@@ -7,6 +7,8 @@ LINTVER=v1.49.0
 LINTBIN=${BINDIR}/lint_${GOVER}_${LINTVER}
 PACKAGE=gitlab.ozon.dev/egor.linkinked/kartashov-egor/cmd/bot
 
+export COMPOSE_PROJECT_NAME=finances-bot
+
 ifneq (,$(wildcard ./.env))
     include .env
     export
@@ -20,8 +22,11 @@ build: bindir
 test:
 	go test ./...
 
-run:
-	go run ${PACKAGE}
+dev:
+	go run ${PACKAGE} -devmode
+
+prod:
+	go run ${PACKAGE} 2>&1 | tee ./data/log.txt
 
 generate: install-mockgen
 	${MOCKGEN} -source=internal/model/messages/incoming_msg.go -destination=internal/mocks/messages/messages_mocks.go
@@ -53,11 +58,27 @@ install-smartimports: bindir
 		(GOBIN=${BINDIR} go install github.com/pav5000/smartimports/cmd/smartimports@latest && \
 		mv ${BINDIR}/smartimports ${SMARTIMPORTS})
 
-docker-up:
-	docker compose up -d
+.PHONY: storage
+storage:
+	cd deployments && make storage
 
 migrate-up:
 	goose --dir migrations postgres ${GOOSE_DB_DSN} up
 
 migrate-down:
 	goose --dir migrations postgres ${GOOSE_DB_DSN} down
+
+.PHONY: logs
+logs:
+	cd deployments && make logs
+
+.PHONY: tracing
+tracing:
+	cd deployments && make tracing
+
+.PHONY: metrics
+metrics:
+	cd deployments && make metrics
+
+all: logs tracing metrics
+

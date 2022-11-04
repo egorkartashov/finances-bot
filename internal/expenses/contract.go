@@ -23,7 +23,7 @@ type expenseStorage interface {
 	GetExpenses(ctx context.Context, userID int64, minTime time.Time) ([]entities.Expense, error)
 }
 
-type userUc interface {
+type userStorage interface {
 	Get(ctx context.Context, id int64) (entities.User, bool, error)
 }
 

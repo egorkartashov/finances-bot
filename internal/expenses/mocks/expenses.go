@@ -141,42 +141,43 @@ func (mr *MockexpenseStorageMockRecorder) GetExpenses(ctx, userID, minTime inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExpenses", reflect.TypeOf((*MockexpenseStorage)(nil).GetExpenses), ctx, userID, minTime)
 }
 
-// MockuserUc is a mock of userUc interface.
-type MockuserUc struct {
+// MockuserStorage is a mock of userStorage interface.
+type MockuserStorage struct {
 	ctrl     *gomock.Controller
-	recorder *MockuserUcMockRecorder
+	recorder *MockuserStorageMockRecorder
 }
 
-// MockuserUcMockRecorder is the mock recorder for MockuserUc.
-type MockuserUcMockRecorder struct {
-	mock *MockuserUc
+// MockuserStorageMockRecorder is the mock recorder for MockuserStorage.
+type MockuserStorageMockRecorder struct {
+	mock *MockuserStorage
 }
 
-// NewMockuserUc creates a new mock instance.
-func NewMockuserUc(ctrl *gomock.Controller) *MockuserUc {
-	mock := &MockuserUc{ctrl: ctrl}
-	mock.recorder = &MockuserUcMockRecorder{mock}
+// NewMockuserStorage creates a new mock instance.
+func NewMockuserStorage(ctrl *gomock.Controller) *MockuserStorage {
+	mock := &MockuserStorage{ctrl: ctrl}
+	mock.recorder = &MockuserStorageMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockuserUc) EXPECT() *MockuserUcMockRecorder {
+func (m *MockuserStorage) EXPECT() *MockuserStorageMockRecorder {
 	return m.recorder
 }
 
 // Get mocks base method.
-func (m *MockuserUc) Get(ctx context.Context, id int64) (entities.User, error) {
+func (m *MockuserStorage) Get(ctx context.Context, id int64) (entities.User, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, id)
 	ret0, _ := ret[0].(entities.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockuserUcMockRecorder) Get(ctx, id interface{}) *gomock.Call {
+func (mr *MockuserStorageMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockuserUc)(nil).Get), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockuserStorage)(nil).Get), ctx, id)
 }
 
 // MockcurrencyConverter is a mock of currencyConverter interface.

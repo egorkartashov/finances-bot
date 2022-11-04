@@ -3,10 +3,9 @@ package limits
 import "github.com/shopspring/decimal"
 
 type LimitCheckResult struct {
-	Status                    LimitCheckStatus
-	Limit                     decimal.Decimal
-	TotalSumWithoutNewExpense decimal.Decimal
-	TotalSumWithNewExpense    decimal.Decimal
+	Status          LimitCheckStatus
+	Limit           decimal.Decimal
+	CurrentTotalSum decimal.Decimal
 }
 
 type LimitCheckStatus byte

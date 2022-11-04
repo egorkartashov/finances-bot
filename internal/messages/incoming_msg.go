@@ -3,8 +3,7 @@ package messages
 
 import (
 	"context"
-
-	"github.com/pkg/errors"
+	"time"
 )
 
 type MessageSender interface {
@@ -14,25 +13,30 @@ type MessageSender interface {
 
 type MessageHandler interface {
 	Handle(ctx context.Context, msg Message) HandleResult
+}
+
+type NamedHandler interface {
+	MessageHandler
 	Name() string
 }
 
 type Model struct {
 	messageSender MessageSender
-	handlers      []MessageHandler
+	handler       MessageHandler
 }
 
-func New(tgClient MessageSender, handlers []MessageHandler) *Model {
+func NewModel(tgClient MessageSender, handler MessageHandler) *Model {
 	return &Model{
 		messageSender: tgClient,
-		handlers:      handlers,
+		handler:       handler,
 	}
 }
 
 type Message struct {
-	Text                  string
 	UserID                int64
 	UserName              string
+	SendTime              time.Time
+	Text                  string
 	CallbackData          string
 	InlineKeyboardButtons [][]InlineKeyboardButton
 }
@@ -43,24 +47,17 @@ type InlineKeyboardButton struct {
 }
 
 type HandleResult struct {
-	Skipped bool
-	Err     error
+	Skipped     bool
+	Err         error
+	HandlerName string
 }
 
-const UnknownCommandMessage = "не знаю эту команду"
+const SomethingHasBroken = "Что-то сломалось :o"
 
-func (m *Model) IncomingMessage(msg Message) error {
-	for _, h := range m.handlers {
-		res := h.Handle(context.Background(), msg)
-		if res.Skipped {
-			continue
-		}
-		if res.Err != nil {
-			_ = m.messageSender.SendText("Что-то сломалось :o", msg.UserID)
-			return errors.WithMessage(res.Err, "IncomingMessage: error in "+h.Name()+" handler")
-		}
-		return nil
+func (m *Model) IncomingMessage(ctx context.Context, msg Message) {
+	res := m.handler.Handle(ctx, msg)
+	if res.Err != nil {
+		_ = m.messageSender.SendText(SomethingHasBroken, msg.UserID)
+		return
 	}
-
-	return m.messageSender.SendText(UnknownCommandMessage, msg.UserID)
 }
