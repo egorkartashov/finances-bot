@@ -24,25 +24,27 @@ func convertToTgInlineKeyboard(buttons [][]messages.InlineKeyboardButton) tgbota
 
 func convertToMessage(update tgbotapi.Update) (msg messages.Message, ok bool) {
 	if update.CallbackQuery != nil {
-		msg = extractCommonFields(update)
-		msg.CallbackData = update.CallbackData()
+		data := update.CallbackQuery
+		msg = messages.Message{
+			UserID:       data.From.ID,
+			UserName:     data.From.UserName,
+			SendTime:     data.Message.Time(),
+			CallbackData: update.CallbackData(),
+		}
 		ok = true
 		return
 	} else if update.Message != nil {
-		msg = extractCommonFields(update)
-		msg.Text = update.Message.Text
+		data := update.Message
+		msg = messages.Message{
+			UserID:   data.From.ID,
+			UserName: data.From.UserName,
+			Text:     data.Text,
+			SendTime: data.Time(),
+		}
 		ok = true
 		return
 	}
 
 	ok = false
 	return
-}
-
-func extractCommonFields(update tgbotapi.Update) messages.Message {
-	return messages.Message{
-		UserID:   update.Message.From.ID,
-		UserName: update.Message.From.UserName,
-		SendTime: update.Message.Time(),
-	}
 }
