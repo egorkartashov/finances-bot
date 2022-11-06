@@ -9,7 +9,8 @@ import (
 )
 
 type Limits struct {
-	db dbTxStorage
+	db           dbTxStorage
+	baseCurrency entities.Currency
 }
 
 type limitModel struct {
@@ -55,6 +56,7 @@ func (l *Limits) Get(ctx context.Context, userID int64, category string) (
 		UserID:   model.UserID,
 		Category: model.Category,
 		Sum:      model.Sum,
+		Currency: l.baseCurrency,
 	}
 	return
 }
@@ -65,8 +67,9 @@ func (l *Limits) Delete(ctx context.Context, userID int64, category string) (err
 	return
 }
 
-func NewLimits(db dbTxStorage) *Limits {
+func NewLimits(db dbTxStorage, baseCurrency entities.Currency) *Limits {
 	return &Limits{
-		db: db,
+		db:           db,
+		baseCurrency: baseCurrency,
 	}
 }

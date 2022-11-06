@@ -3,10 +3,9 @@ package set_limit
 import (
 	"context"
 
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/limits"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/set_limit"
 )
 
-type limitUc interface {
-	SetLimit(ctx context.Context, limit entities.MonthBudgetLimit) (limits.SetLimitResult, error)
+type usecase interface {
+	SetLimit(ctx context.Context, req set_limit.Req) (set_limit.Resp, error)
 }

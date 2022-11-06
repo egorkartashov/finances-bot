@@ -1,30 +1,30 @@
-package handlers
+package get_report
 
 import (
 	"context"
 	"strings"
 
 	"github.com/opentracing/opentracing-go"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/expenses"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/utils"
 )
 
 type ReportPresenter interface {
-	ReportToPlainText(report *expenses.Report) string
+	ReportToPlainText(report *entities.Report) string
 }
 
 type Report struct {
-	expenses  *expenses.Usecase
+	usecase   usecase
 	presenter ReportPresenter
-	base
+	sender    messages.MessageSender
 }
 
-func NewReport(expenses *expenses.Usecase, presenter ReportPresenter, sender messages.MessageSender) *Report {
+func New(uc usecase, p ReportPresenter, s messages.MessageSender) *Report {
 	return &Report{
-		expenses:  expenses,
-		presenter: presenter,
-		base:      base{sender},
+		usecase:   uc,
+		presenter: p,
+		sender:    s,
 	}
 }
 
@@ -36,10 +36,10 @@ const (
 
 var (
 	reportKeywords  = []string{"отчет", "отчёт"}
-	keywordToPeriod = map[string]expenses.ReportPeriod{
-		"неделя": expenses.ReportFor1Week,
-		"месяц":  expenses.ReportFor1Month,
-		"год":    expenses.ReportFor1Year,
+	keywordToPeriod = map[string]entities.ReportPeriod{
+		"неделя": entities.ReportFor1Week,
+		"месяц":  entities.ReportFor1Month,
+		"год":    entities.ReportFor1Year,
 	}
 )
 
@@ -63,17 +63,17 @@ func (h *Report) Handle(ctx context.Context, msg messages.Message) messages.Hand
 	reportPeriod, ok := keywordToPeriod[params]
 	span.SetTag("report-period", reportPeriod)
 	if !ok {
-		err := h.MessageSender.SendText(IncorrectFormatMessage, msg.UserID)
+		err := h.sender.SendText(IncorrectFormatMessage, msg.UserID)
 		return utils.HandleWithErrorOrNil(err)
 	}
 
-	report, err := h.expenses.GenerateReport(ctx, msg.UserID, reportPeriod)
+	report, err := h.usecase.GenerateReport(ctx, msg.UserID, reportPeriod)
 	if err != nil {
 		return utils.HandleWithErrorOrNil(err)
 	}
 
 	reportStr := h.presenter.ReportToPlainText(report)
-	err = h.MessageSender.SendText(reportStr, msg.UserID)
+	err = h.sender.SendText(reportStr, msg.UserID)
 	return utils.HandleWithErrorOrNil(err)
 }
 

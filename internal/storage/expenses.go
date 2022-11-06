@@ -40,12 +40,12 @@ VALUES (:user_id, :category, :sum_rub, :date)`
 	return err
 }
 
-func (s *Expenses) GetExpenses(ctx context.Context, userID int64, minTime time.Time) ([]entities.Expense, error) {
+func (s *Expenses) GetExpenses(ctx context.Context, userID int64, startDate time.Time) ([]entities.Expense, error) {
 
 	const query = `SELECT * FROM expenses WHERE user_id = $1 AND date >= $2`
 
 	var expModels []expense
-	if err := s.db.Db(ctx).SelectContext(ctx, &expModels, query, userID, minTime); err != nil {
+	if err := s.db.Db(ctx).SelectContext(ctx, &expModels, query, userID, startDate); err != nil {
 		return nil, err
 	}
 
