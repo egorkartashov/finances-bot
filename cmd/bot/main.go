@@ -74,23 +74,23 @@ func main() {
 	ratesApi := &cbrf.RatesApi{}
 	ratesProvider := rates.NewProvider(cfg, ratesApi, ratesStorage)
 	currencyConverter := currency.NewConverter(cfg, ratesProvider, userStorage)
-	limit_checker := limits.NewChecker(limitStorage, expenseStorage, userStorage, currencyConverter)
+	limitChecker := limits.NewChecker(limitStorage, expenseStorage, userStorage, currencyConverter)
 
-	register_user_uc := register_user.NewUsecase(cfg, userStorage)
-	set_currency_uc := set_currency.NewUsecase(cfg, userStorage)
-	add_expense_uc := add_expense.NewUsecase(dbTxStorage, expenseStorage, userStorage, currencyConverter, limit_checker)
-	get_expenses_report_uc := get_expenses_report.NewUsecase(expenseStorage, userStorage, currencyConverter)
-	set_limit_uc := set_limit.NewUsecase(limitStorage, userStorage, currencyConverter)
-	remove_limit_uc := remove_limit.NewUsecase(limitStorage)
+	registerUserUc := register_user.NewUsecase(cfg, userStorage)
+	setCurrencyUc := set_currency.NewUsecase(cfg, userStorage)
+	addExpenseUc := add_expense.NewUsecase(dbTxStorage, expenseStorage, userStorage, currencyConverter, limitChecker)
+	getExpensesReportUc := get_expenses_report.NewUsecase(expenseStorage, userStorage, currencyConverter)
+	setLimitUc := set_limit.NewUsecase(limitStorage, userStorage, currencyConverter)
+	removeLimitUc := remove_limit.NewUsecase(limitStorage)
 
 	var handler messages.MessageHandler = aggregate.NewAggregate(
-		handlers.NewStart(register_user_uc, tgClient),
-		handlers.NewAddExpense(add_expense_uc, tgClient),
-		handlers.NewGetReport(get_expenses_report_uc, presenters.NewReport(), tgClient),
+		handlers.NewStart(registerUserUc, tgClient),
+		handlers.NewAddExpense(addExpenseUc, tgClient),
+		handlers.NewGetReport(getExpensesReportUc, presenters.NewReport(), tgClient),
 		handlers.NewGetCurrencyOptions(tgClient),
-		handlers.NewSetCurrency(set_currency_uc, tgClient),
-		handlers.NewSetLimit(set_limit_uc, tgClient),
-		handlers.NewRemoveLimit(remove_limit_uc, tgClient),
+		handlers.NewSetCurrency(setCurrencyUc, tgClient),
+		handlers.NewSetLimit(setLimitUc, tgClient),
+		handlers.NewRemoveLimit(removeLimitUc, tgClient),
 		handlers.NewUnknownCommand(tgClient),
 	)
 	handler = logging.Middleware(handler)
