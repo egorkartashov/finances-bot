@@ -167,31 +167,31 @@ func (mr *MockcurrencyConverterMockRecorder) ToBase(ctx, from, sum, date interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToBase", reflect.TypeOf((*MockcurrencyConverter)(nil).ToBase), ctx, from, sum, date)
 }
 
-// MocklimitUc is a mock of limitUc interface.
-type MocklimitUc struct {
+// MocklimitChecker is a mock of limitChecker interface.
+type MocklimitChecker struct {
 	ctrl     *gomock.Controller
-	recorder *MocklimitUcMockRecorder
+	recorder *MocklimitCheckerMockRecorder
 }
 
-// MocklimitUcMockRecorder is the mock recorder for MocklimitUc.
-type MocklimitUcMockRecorder struct {
-	mock *MocklimitUc
+// MocklimitCheckerMockRecorder is the mock recorder for MocklimitChecker.
+type MocklimitCheckerMockRecorder struct {
+	mock *MocklimitChecker
 }
 
-// NewMocklimitUc creates a new mock instance.
-func NewMocklimitUc(ctrl *gomock.Controller) *MocklimitUc {
-	mock := &MocklimitUc{ctrl: ctrl}
-	mock.recorder = &MocklimitUcMockRecorder{mock}
+// NewMocklimitChecker creates a new mock instance.
+func NewMocklimitChecker(ctrl *gomock.Controller) *MocklimitChecker {
+	mock := &MocklimitChecker{ctrl: ctrl}
+	mock.recorder = &MocklimitCheckerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MocklimitUc) EXPECT() *MocklimitUcMockRecorder {
+func (m *MocklimitChecker) EXPECT() *MocklimitCheckerMockRecorder {
 	return m.recorder
 }
 
 // Check mocks base method.
-func (m *MocklimitUc) Check(ctx context.Context, userID int64, expense entities.Expense) (limits.LimitCheckResult, error) {
+func (m *MocklimitChecker) Check(ctx context.Context, userID int64, expense entities.Expense) (limits.LimitCheckResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Check", ctx, userID, expense)
 	ret0, _ := ret[0].(limits.LimitCheckResult)
@@ -200,7 +200,7 @@ func (m *MocklimitUc) Check(ctx context.Context, userID int64, expense entities.
 }
 
 // Check indicates an expected call of Check.
-func (mr *MocklimitUcMockRecorder) Check(ctx, userID, expense interface{}) *gomock.Call {
+func (mr *MocklimitCheckerMockRecorder) Check(ctx, userID, expense interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Check", reflect.TypeOf((*MocklimitUc)(nil).Check), ctx, userID, expense)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Check", reflect.TypeOf((*MocklimitChecker)(nil).Check), ctx, userID, expense)
 }

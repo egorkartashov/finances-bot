@@ -2,9 +2,9 @@ package set_currency
 
 import (
 	"context"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/users"
 
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/users"
 )
 
 type Usecase struct {

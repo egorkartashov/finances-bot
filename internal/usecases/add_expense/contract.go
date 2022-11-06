@@ -28,6 +28,6 @@ type currencyConverter interface {
 	)
 }
 
-type limitUc interface {
+type limitChecker interface {
 	Check(ctx context.Context, userID int64, expense entities.Expense) (limits.LimitCheckResult, error)
 }

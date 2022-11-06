@@ -2,12 +2,12 @@ package set_limit
 
 import (
 	"context"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/users"
 	"time"
 
 	"github.com/shopspring/decimal"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/dtos"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/users"
 )
 
 type Usecase struct {

@@ -2,7 +2,6 @@ package add_expense_test
 
 import (
 	"context"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/users"
 	"math/rand"
 	"testing"
 	"time"
@@ -17,6 +16,7 @@ import (
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/limits"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/add_expense"
 	add_expense_mocks "gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/add_expense/mocks"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/users"
 )
 
 const baseCurr = currency.RUB
@@ -31,7 +31,7 @@ type deps struct {
 	expenseStorage    *add_expense_mocks.MockexpenseStorage
 	userStorage       *add_expense_mocks.MockuserStorage
 	currencyConverter *add_expense_mocks.MockcurrencyConverter
-	limitUc           *add_expense_mocks.MocklimitUc
+	limitUc           *add_expense_mocks.MocklimitChecker
 }
 
 func TestUsecase_AddExpense_WhenErrGettingUser_ReturnsErr(t *testing.T) {
@@ -450,12 +450,12 @@ func testAddExpenseWithThisArrange(
 	expenseStorage := add_expense_mocks.NewMockexpenseStorage(ctrl)
 	userStorage := add_expense_mocks.NewMockuserStorage(ctrl)
 	currencyConverter := add_expense_mocks.NewMockcurrencyConverter(ctrl)
-	limitUc := add_expense_mocks.NewMocklimitUc(ctrl)
+	limitChecker := add_expense_mocks.NewMocklimitChecker(ctrl)
 
-	deps := deps{expenseStorage, userStorage, currencyConverter, limitUc}
+	deps := deps{expenseStorage, userStorage, currencyConverter, limitChecker}
 	wantRes, wantErr := arrange(inputData, deps)
 
-	expensesModel := add_expense.NewUsecase(tx, expenseStorage, userStorage, currencyConverter, limitUc)
+	expensesModel := add_expense.NewUsecase(tx, expenseStorage, userStorage, currencyConverter, limitChecker)
 	gotRes, gotErr := expensesModel.AddExpense(inputData.ctx, inputData.userID, inputData.req)
 
 	assert.Equal(t, wantRes, gotRes)

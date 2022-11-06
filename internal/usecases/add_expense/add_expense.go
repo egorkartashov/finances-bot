@@ -2,13 +2,13 @@ package add_expense
 
 import (
 	"context"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/users"
 	"time"
 
 	"github.com/shopspring/decimal"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/dtos"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/limits"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/users"
 )
 
 type Usecase struct {
@@ -16,7 +16,7 @@ type Usecase struct {
 	expenseStorage    expenseStorage
 	currencyConverter currencyConverter
 	userStorage       userStorage
-	limitChecker      limitUc
+	limitChecker      limitChecker
 }
 
 type AddExpenseReq struct {
@@ -97,12 +97,12 @@ func (u *Usecase) convertToExpenseInBaseCurrency(
 	return exp, baseCurr, nil
 }
 
-func NewUsecase(tx tx, es expenseStorage, us userStorage, cc currencyConverter, lu limitUc) *Usecase {
+func NewUsecase(tx tx, es expenseStorage, us userStorage, cc currencyConverter, lc limitChecker) *Usecase {
 	return &Usecase{
 		tx:                tx,
 		expenseStorage:    es,
 		userStorage:       us,
 		currencyConverter: cc,
-		limitChecker:      lu,
+		limitChecker:      lc,
 	}
 }
