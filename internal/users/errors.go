@@ -1,4 +1,4 @@
-package set_currency
+package users
 
 import "fmt"
 

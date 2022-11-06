@@ -2,6 +2,7 @@ package add_expense_test
 
 import (
 	"context"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/users"
 	"math/rand"
 	"testing"
 	"time"
@@ -16,7 +17,6 @@ import (
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/limits"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/add_expense"
 	add_expense_mocks "gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/add_expense/mocks"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/set_currency"
 )
 
 const baseCurr = currency.RUB
@@ -121,7 +121,7 @@ func TestUsecase_AddExpense_WhenUserDoesNotExist_ReturnsErrUserNotFound(t *testi
 							Return(entities.User{}, false, nil)
 
 						wantRes = add_expense.AddExpenseResp{}
-						wantErr = set_currency.NewUserNotFoundErr(userID)
+						wantErr = users.NewUserNotFoundErr(userID)
 
 						return
 					},

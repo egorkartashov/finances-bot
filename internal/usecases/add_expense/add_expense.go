@@ -2,13 +2,13 @@ package add_expense
 
 import (
 	"context"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/users"
 	"time"
 
 	"github.com/shopspring/decimal"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/dtos"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/limits"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/set_currency"
 )
 
 type Usecase struct {
@@ -42,7 +42,7 @@ func (u *Usecase) AddExpense(outsideCtx context.Context, userID int64, req AddEx
 				return err
 			}
 			if !ok {
-				return set_currency.NewUserNotFoundErr(userID)
+				return users.NewUserNotFoundErr(userID)
 			}
 
 			expense, baseCurr, err := u.convertToExpenseInBaseCurrency(ctx, req, user.Currency)

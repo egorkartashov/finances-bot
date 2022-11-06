@@ -3,12 +3,12 @@ package get_expenses_report
 import (
 	"context"
 	"fmt"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/users"
 	"sort"
 	"time"
 
 	"github.com/shopspring/decimal"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/set_currency"
 )
 
 type Usecase struct {
@@ -35,7 +35,7 @@ func (u *Usecase) GenerateReport(ctx context.Context, userID int64, reportPeriod
 		return
 	}
 	if !ok {
-		err = set_currency.NewUserNotFoundErr(userID)
+		err = users.NewUserNotFoundErr(userID)
 		return
 	}
 

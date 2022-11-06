@@ -2,12 +2,12 @@ package set_limit
 
 import (
 	"context"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/users"
 	"time"
 
 	"github.com/shopspring/decimal"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/dtos"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/set_currency"
 )
 
 type Usecase struct {
@@ -43,7 +43,7 @@ func (u *Usecase) SetLimit(ctx context.Context, req Req) (resp Resp, err error) 
 		return Resp{}, err
 	}
 	if !ok {
-		return Resp{}, set_currency.NewUserNotFoundErr(req.UserID)
+		return Resp{}, users.NewUserNotFoundErr(req.UserID)
 	}
 
 	sumInBaseCurr, baseCurr, err := u.converter.ToBase(ctx, user.Currency, req.SumInUserCurrency, req.SetAt)

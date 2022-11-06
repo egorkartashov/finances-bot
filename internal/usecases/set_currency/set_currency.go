@@ -2,6 +2,7 @@ package set_currency
 
 import (
 	"context"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/users"
 
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
 )
@@ -24,7 +25,7 @@ func (u *Usecase) SetCurrency(ctx context.Context, userID int64, curr entities.C
 		return err
 	}
 	if !ok {
-		return NewUserNotFoundErr(userID)
+		return users.NewUserNotFoundErr(userID)
 	}
 
 	user.Currency = curr
