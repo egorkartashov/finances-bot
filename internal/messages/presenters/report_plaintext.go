@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/expenses"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
 )
 
 type Report struct {
@@ -14,7 +14,7 @@ func NewReport() *Report {
 	return &Report{}
 }
 
-func (p *Report) ReportToPlainText(report *expenses.Report) string {
+func (p *Report) ReportToPlainText(report *entities.Report) string {
 	if len(report.Entries) == 0 {
 		return "Трат нет"
 	}

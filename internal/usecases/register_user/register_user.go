@@ -1,4 +1,4 @@
-package users
+package register_user
 
 import (
 	"context"
@@ -7,24 +7,15 @@ import (
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
 )
 
-type userStorage interface {
-	Save(ctx context.Context, user entities.User) error
-	Get(ctx context.Context, id int64) (u entities.User, ok bool, err error)
-}
-
-type cfg interface {
-	BaseCurrency() entities.Currency
-}
-
 type Usecase struct {
 	cfg     cfg
 	storage userStorage
 }
 
-func NewUsecase(cfg cfg, storage userStorage) *Usecase {
+func NewUsecase(c cfg, s userStorage) *Usecase {
 	return &Usecase{
-		cfg:     cfg,
-		storage: storage,
+		cfg:     c,
+		storage: s,
 	}
 }
 
@@ -48,17 +39,4 @@ func (u *Usecase) Register(ctx context.Context, userID int64) (err error) {
 		return
 	}
 	return
-}
-
-func (u *Usecase) SetCurrency(ctx context.Context, userID int64, curr entities.Currency) error {
-	user, ok, err := u.storage.Get(ctx, userID)
-	if err != nil {
-		return err
-	}
-	if !ok {
-		return NewUserNotFoundErr(userID)
-	}
-
-	user.Currency = curr
-	return u.storage.Save(ctx, user)
 }

@@ -11,4 +11,5 @@ type MonthBudgetLimit struct {
 	Category string
 	Sum      decimal.Decimal
 	SetAt    time.Time
+	Currency Currency
 }

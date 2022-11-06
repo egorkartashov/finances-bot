@@ -1,4 +1,4 @@
-package handlers
+package set_currency
 
 import (
 	"context"
@@ -12,13 +12,19 @@ import (
 )
 
 type userUc interface {
-	Register(ctx context.Context, userID int64) (err error)
 	SetCurrency(ctx context.Context, userID int64, curr entities.Currency) error
 }
 
 type SetCurrency struct {
 	userUc userUc
 	sender messages.MessageSender
+}
+
+func New(userUc userUc, sender messages.MessageSender) *SetCurrency {
+	return &SetCurrency{
+		userUc: userUc,
+		sender: sender,
+	}
 }
 
 func (s *SetCurrency) Handle(ctx context.Context, msg messages.Message) messages.HandleResult {
@@ -39,11 +45,4 @@ func (s *SetCurrency) Handle(ctx context.Context, msg messages.Message) messages
 
 func (s *SetCurrency) Name() string {
 	return "SetCurrency"
-}
-
-func NewSetCurrency(userUc userUc, sender messages.MessageSender) *SetCurrency {
-	return &SetCurrency{
-		userUc: userUc,
-		sender: sender,
-	}
 }

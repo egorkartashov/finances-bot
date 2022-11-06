@@ -1,4 +1,5 @@
-package limits
+//go:generate mockgen -source ${GOFILE} -package ${GOPACKAGE}_mocks -destination mocks/${GOPACKAGE}_mocks.go
+package get_expenses_report
 
 import (
 	"context"
@@ -8,16 +9,8 @@ import (
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
 )
 
-type limitStorage interface {
-	Save(ctx context.Context, limit entities.MonthBudgetLimit) (err error)
-	Get(ctx context.Context, userID int64, category string) (limit entities.MonthBudgetLimit, ok bool, err error)
-	Delete(ctx context.Context, userID int64, category string) (err error)
-}
-
 type expenseStorage interface {
-	GetSumForCategoryAndPeriod(
-		ctx context.Context, userID int64, category string, startDate, endDate time.Time,
-	) (decimal.Decimal, error)
+	GetExpenses(ctx context.Context, userID int64, startDate time.Time) ([]entities.Expense, error)
 }
 
 type userStorage interface {
@@ -25,6 +18,9 @@ type userStorage interface {
 }
 
 type currencyConverter interface {
+	FromBase(ctx context.Context, to entities.Currency, sum decimal.Decimal, date time.Time) (
+		res decimal.Decimal, err error,
+	)
 	ToBase(ctx context.Context, from entities.Currency, sum decimal.Decimal, date time.Time) (
 		res decimal.Decimal, curr entities.Currency, err error,
 	)

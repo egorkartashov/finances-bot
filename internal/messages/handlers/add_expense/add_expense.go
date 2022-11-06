@@ -1,30 +1,28 @@
-package handlers
+package add_expense
 
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/pkg/errors"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/expenses"
+	"github.com/shopspring/decimal"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/limits"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/utils"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/add_expense"
 )
 
 type AddExpense struct {
-	expensesUc *expenses.Usecase
-	base
+	uc     usecase
+	sender messages.MessageSender
 }
 
-func NewAddExpense(expensesUc *expenses.Usecase, sender messages.MessageSender) *AddExpense {
+func New(uc usecase, sender messages.MessageSender) *AddExpense {
 	return &AddExpense{
-		expensesUc: expensesUc,
-		base: base{
-			MessageSender: sender,
-		},
+		uc:     uc,
+		sender: sender,
 	}
 }
 
@@ -50,31 +48,31 @@ func (h *AddExpense) Handle(ctx context.Context, msg messages.Message) messages.
 
 	expenseParams := strings.TrimPrefix(msg.Text, expenseKeyword)
 	expenseParams = strings.Trim(expenseParams, " ")
-	exp, err := parseExpense(expenseParams)
+	req, err := parseReq(expenseParams)
 	if err != nil {
-		err := h.MessageSender.SendText(incorrectFormatMessage, msg.UserID)
+		err := h.sender.SendText(incorrectFormatMessage, msg.UserID)
 		return utils.HandleWithErrorOrNil(err)
 	}
 
-	res, err := h.expensesUc.AddExpense(ctx, msg.UserID, *exp)
+	res, err := h.uc.AddExpense(ctx, msg.UserID, *req)
 	if err != nil {
 		return utils.HandleWithErrorOrNil(err)
 	}
 
 	response := constructResponse(res)
-	err = h.MessageSender.SendText(response, msg.UserID)
+	err = h.sender.SendText(response, msg.UserID)
 
 	return utils.HandleWithErrorOrNil(err)
 }
 
-func parseExpense(paramsStr string) (*expenses.AddExpenseDto, error) {
+func parseReq(paramsStr string) (*add_expense.AddExpenseReq, error) {
 	params := strings.Split(paramsStr, " ")
 	if len(params) < 2 || len(params) > 3 {
 		return nil, incorrectParamsCountErr
 	}
 
 	category := params[0]
-	sum, err := strconv.ParseInt(params[1], 10, 32)
+	sum, err := decimal.NewFromString(params[1])
 	if err != nil {
 		return nil, incorrectSumErr
 	}
@@ -84,9 +82,9 @@ func parseExpense(paramsStr string) (*expenses.AddExpenseDto, error) {
 		return nil, incorrectDateErr
 	}
 
-	return &expenses.AddExpenseDto{
+	return &add_expense.AddExpenseReq{
 		Category: category,
-		Sum:      int32(sum),
+		Sum:      sum,
 		Date:     date,
 	}, nil
 }
@@ -101,30 +99,36 @@ func parseDate(params []string) (time.Time, error) {
 	}
 }
 
-func constructResponse(res expenses.AddExpenseResult) string {
-	baseCurrency := res.Rate.To
-	sumInfo := fmt.Sprintf("%v %s", res.SumInUserCurrency, res.Rate.From)
-	if res.Rate.From != baseCurrency {
-		sumInfo += fmt.Sprintf(" (%v %s)", res.Expense.Sum, baseCurrency)
+func constructResponse(res add_expense.AddExpenseResp) string {
+	sumInfo := fmt.Sprintf("%v %s", res.UserInputSum.Sum, res.UserInputSum.Currency)
+	if res.SavedSum.Currency != res.UserInputSum.Currency {
+		sumInfo += fmt.Sprintf(" (%v %s)", res.SavedSum.Sum, res.SavedSum.Currency)
 	}
 
-	dateStr := res.Expense.Date.Format("02.01.2006")
+	dateStr := res.Date.Format("02.01.2006")
 	expenseAddedMsg := fmt.Sprintf(
-		"Успешно добавили трату: категория \"%s\", сумма %s, дата %s", res.Expense.Category, sumInfo, dateStr,
+		"Успешно добавили трату: категория \"%s\", сумма %s, дата %s", res.Category, sumInfo, dateStr,
 	)
 
-	limitRes := res.LimitCheckResult
-	if limitRes.Status != limits.StatusLimitExceeded {
+	limitCheckResultStr := limitCheckResultToString(res.LimitCheckResult)
+	if limitCheckResultStr == "" {
 		return expenseAddedMsg
 	}
+	return limitCheckResultStr + "\n\n" + expenseAddedMsg
+}
 
-	totalSumWithNewExpense := res.LimitCheckResult.CurrentTotalSum.Add(res.Expense.Sum)
-	limitExceededMsg := fmt.Sprintf(
-		"Превышен лимит по тратам в данной категории за месяц (лимит %v %s, потрачено %v %s), "+
-			"будьте аккуратнее со своими тратами!", limitRes.Limit, baseCurrency, totalSumWithNewExpense,
-		baseCurrency,
+func limitCheckResultToString(result limits.LimitCheckResult) string {
+	if result.Status != limits.StatusLimitExceeded {
+		return ""
+	}
+
+	limitStatusString := fmt.Sprintf(
+		"лимит %v %[2]s, потрачено %v %[2]s", result.Limit, result.Currency, result.SumWithNewExpense,
 	)
-	return limitExceededMsg + "\n\n" + expenseAddedMsg
+	return fmt.Sprintf(
+		"Превышен лимит по тратам в данной категории за месяц (%s), будьте аккуратнее со своими тратами!",
+		limitStatusString,
+	)
 }
 
 func (h *AddExpense) Name() string {

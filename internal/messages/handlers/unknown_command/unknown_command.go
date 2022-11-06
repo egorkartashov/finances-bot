@@ -1,4 +1,4 @@
-package handlers
+package unknown_command
 
 import (
 	"context"
@@ -10,7 +10,7 @@ type UnknownCommand struct {
 	sender messages.MessageSender
 }
 
-func NewUnknownCommand(sender messages.MessageSender) *UnknownCommand {
+func New(sender messages.MessageSender) *UnknownCommand {
 	return &UnknownCommand{sender}
 }
 

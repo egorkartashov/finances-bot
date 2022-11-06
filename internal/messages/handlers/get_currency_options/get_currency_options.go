@@ -1,4 +1,4 @@
-package handlers
+package get_currency_options
 
 import (
 	"context"
@@ -43,7 +43,7 @@ func (g *GetCurrencyOptions) Name() string {
 	return "GetCurrencyOptions"
 }
 
-func NewGetCurrencyOptions(sender messages.MessageSender) *GetCurrencyOptions {
+func New(sender messages.MessageSender) *GetCurrencyOptions {
 	return &GetCurrencyOptions{
 		sender: sender,
 	}

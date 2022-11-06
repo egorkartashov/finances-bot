@@ -10,7 +10,7 @@ import (
 )
 
 type RemoveLimit struct {
-	limitUc       limitUc
+	usecase       usecase
 	messageSender messages.MessageSender
 }
 
@@ -34,7 +34,7 @@ func (h *RemoveLimit) Handle(ctx context.Context, msg messages.Message) messages
 		err := h.messageSender.SendText(RemoveLimitHelp, msg.UserID)
 		return utils.HandleWithErrorOrNil(err)
 	}
-	if err := h.limitUc.RemoveLimit(ctx, msg.UserID, category); err != nil {
+	if err := h.usecase.RemoveLimit(ctx, msg.UserID, category); err != nil {
 		return utils.HandleWithErrorOrNil(errors.WithMessage(err, "usecase RemoveLimit failed"))
 	}
 
@@ -46,9 +46,9 @@ func (h *RemoveLimit) Handle(ctx context.Context, msg messages.Message) messages
 	return utils.HandleSuccess
 }
 
-func NewRemoveLimit(limitUc limitUc, messageSender messages.MessageSender) *RemoveLimit {
+func New(limitUc usecase, messageSender messages.MessageSender) *RemoveLimit {
 	return &RemoveLimit{
-		limitUc:       limitUc,
+		usecase:       limitUc,
 		messageSender: messageSender,
 	}
 }

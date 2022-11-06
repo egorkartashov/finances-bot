@@ -19,7 +19,6 @@ import (
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/config"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/currency"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/expenses"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/limits"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/logger"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
@@ -32,7 +31,12 @@ import (
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/rates"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/storage"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/storage/tx"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/users"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/add_expense"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/get_expenses_report"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/register_user"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/remove_limit"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/set_currency"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/set_limit"
 	"go.uber.org/zap"
 )
 
@@ -65,24 +69,28 @@ func main() {
 	expenseStorage := storage.NewExpenses(dbTxStorage)
 	userStorage := storage.NewUsers(dbTxStorage)
 	ratesStorage := storage.NewRates(dbTxStorage)
-	limitStorage := storage.NewLimits(dbTxStorage)
+	limitStorage := storage.NewLimits(dbTxStorage, cfg.BaseCurrency())
 
 	ratesApi := &cbrf.RatesApi{}
 	ratesProvider := rates.NewProvider(cfg, ratesApi, ratesStorage)
-
-	userUc := users.NewUsecase(cfg, userStorage)
 	currencyConverter := currency.NewConverter(cfg, ratesProvider, userStorage)
-	limitUc := limits.NewUsecase(limitStorage, expenseStorage, currencyConverter)
-	expensesUc := expenses.NewUsecase(cfg, dbTxStorage, expenseStorage, userStorage, currencyConverter, limitUc)
+	limit_checker := limits.NewChecker(limitStorage, expenseStorage, userStorage, currencyConverter)
+
+	register_user_uc := register_user.NewUsecase(cfg, userStorage)
+	set_currency_uc := set_currency.NewUsecase(cfg, userStorage)
+	add_expense_uc := add_expense.NewUsecase(dbTxStorage, expenseStorage, userStorage, currencyConverter, limit_checker)
+	get_expenses_report_uc := get_expenses_report.NewUsecase(expenseStorage, userStorage, currencyConverter)
+	set_limit_uc := set_limit.NewUsecase(limitStorage, userStorage, currencyConverter)
+	remove_limit_uc := remove_limit.NewUsecase(limitStorage)
 
 	var handler messages.MessageHandler = aggregate.NewAggregate(
-		handlers.NewStart(userUc, tgClient),
-		handlers.NewAddExpense(expensesUc, tgClient),
-		handlers.NewReport(expensesUc, presenters.NewReport(), tgClient),
+		handlers.NewStart(register_user_uc, tgClient),
+		handlers.NewAddExpense(add_expense_uc, tgClient),
+		handlers.NewGetReport(get_expenses_report_uc, presenters.NewReport(), tgClient),
 		handlers.NewGetCurrencyOptions(tgClient),
-		handlers.NewSetCurrency(userUc, tgClient),
-		handlers.NewSetLimit(limitUc, tgClient),
-		handlers.NewRemoveLimit(limitUc, tgClient),
+		handlers.NewSetCurrency(set_currency_uc, tgClient),
+		handlers.NewSetLimit(set_limit_uc, tgClient),
+		handlers.NewRemoveLimit(remove_limit_uc, tgClient),
 		handlers.NewUnknownCommand(tgClient),
 	)
 	handler = logging.Middleware(handler)
