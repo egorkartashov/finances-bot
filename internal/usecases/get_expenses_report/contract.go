@@ -25,3 +25,8 @@ type currencyConverter interface {
 		res decimal.Decimal, curr entities.Currency, err error,
 	)
 }
+
+type reportCache interface {
+	Get(ctx context.Context, userID int64, period entities.ReportPeriod) (*entities.Report, error)
+	Save(ctx context.Context, userID int64, period entities.ReportPeriod, report *entities.Report) error
+}

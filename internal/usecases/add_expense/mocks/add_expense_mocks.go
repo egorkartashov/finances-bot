@@ -204,3 +204,40 @@ func (mr *MocklimitCheckerMockRecorder) Check(ctx, userID, expense interface{}) 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Check", reflect.TypeOf((*MocklimitChecker)(nil).Check), ctx, userID, expense)
 }
+
+// MockreportCache is a mock of reportCache interface.
+type MockreportCache struct {
+	ctrl     *gomock.Controller
+	recorder *MockreportCacheMockRecorder
+}
+
+// MockreportCacheMockRecorder is the mock recorder for MockreportCache.
+type MockreportCacheMockRecorder struct {
+	mock *MockreportCache
+}
+
+// NewMockreportCache creates a new mock instance.
+func NewMockreportCache(ctrl *gomock.Controller) *MockreportCache {
+	mock := &MockreportCache{ctrl: ctrl}
+	mock.recorder = &MockreportCacheMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockreportCache) EXPECT() *MockreportCacheMockRecorder {
+	return m.recorder
+}
+
+// DeleteAffected mocks base method.
+func (m *MockreportCache) DeleteAffected(ctx context.Context, userID int64, newExpenseDate time.Time) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAffected", ctx, userID, newExpenseDate)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAffected indicates an expected call of DeleteAffected.
+func (mr *MockreportCacheMockRecorder) DeleteAffected(ctx, userID, newExpenseDate interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAffected", reflect.TypeOf((*MockreportCache)(nil).DeleteAffected), ctx, userID, newExpenseDate)
+}
