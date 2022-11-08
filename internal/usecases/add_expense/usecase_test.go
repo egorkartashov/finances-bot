@@ -28,10 +28,12 @@ type inputData struct {
 }
 
 type deps struct {
+	tx                *add_expense_mocks.Mocktx
 	expenseStorage    *add_expense_mocks.MockexpenseStorage
 	userStorage       *add_expense_mocks.MockuserStorage
 	currencyConverter *add_expense_mocks.MockcurrencyConverter
 	limitUc           *add_expense_mocks.MocklimitChecker
+	reportCache       *add_expense_mocks.MockreportCache
 }
 
 func TestUsecase_AddExpense_WhenErrGettingUser_ReturnsErr(t *testing.T) {
@@ -187,6 +189,61 @@ func TestUsecase_AddExpense_WhenErrConvertingToBaseCurrency_ReturnsErr(t *testin
 	}
 }
 
+func TestUsecase_AddExpense_WhenErrDeletingAffectedReportsFromCache_ReturnsErr(t *testing.T) {
+	tests := []inputData{
+		{
+			userID: 1,
+			req: add_expense.AddExpenseReq{
+				Category: "продукты",
+				Sum:      decimal.NewFromInt32(100),
+				Date:     time.Date(2022, 1, 2, 0, 0, 0, 0, time.UTC),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tc := tt
+
+		t.Run(
+			"", func(t *testing.T) {
+				t.Parallel()
+
+				testAddExpenseWithThisArrange(
+					t, tc,
+					func(inputData inputData, deps deps) (wantRes add_expense.AddExpenseResp, wantErr error) {
+						{
+							ctx := inputData.ctx
+							userID := inputData.userID
+							req := inputData.req
+
+							user := entities.User{
+								ID:       userID,
+								Currency: currency.EUR,
+							}
+							deps.userStorage.EXPECT().Get(ctx, userID).Return(user, true, nil)
+
+							sumInBaseCurr := decimal.NewFromInt32(rand.Int31())
+							deps.currencyConverter.EXPECT().
+								ToBase(ctx, user.Currency, req.Sum, req.Date).
+								Return(sumInBaseCurr, baseCurr, nil)
+
+							delFromCacheErr := errors.New("delFromCacheErr")
+							deps.reportCache.EXPECT().
+								DeleteAffected(ctx, userID, gomock.Any()).
+								Return(delFromCacheErr)
+
+							wantRes = add_expense.AddExpenseResp{}
+							wantErr = delFromCacheErr
+
+							return
+						}
+					},
+				)
+			},
+		)
+	}
+}
+
 func TestUsecase_AddExpense_WhenErrInCheckLimit_ReturnsErr(t *testing.T) {
 	tests := []inputData{
 		{
@@ -232,6 +289,8 @@ func TestUsecase_AddExpense_WhenErrInCheckLimit_ReturnsErr(t *testing.T) {
 							ToBase(ctx, user.Currency, req.Sum, req.Date).
 							Return(sumInBaseCurr, baseCurr, nil)
 
+						deps.reportCache.EXPECT().DeleteAffected(ctx, userID, req.Date).Return(nil)
+
 						expense := entities.Expense{
 							Category: req.Category,
 							Sum:      sumInBaseCurr,
@@ -241,6 +300,8 @@ func TestUsecase_AddExpense_WhenErrInCheckLimit_ReturnsErr(t *testing.T) {
 						deps.limitUc.EXPECT().
 							Check(ctx, userID, expense).
 							Return(limits.LimitCheckResult{}, limitCheckErr)
+
+						expectWithTransaction(deps.tx)
 
 						wantRes = add_expense.AddExpenseResp{}
 						wantErr = limitCheckErr
@@ -298,6 +359,8 @@ func TestUsecase_AddExpense_WhenErrSavingExpense_ReturnsErr(t *testing.T) {
 							ToBase(ctx, user.Currency, req.Sum, req.Date).
 							Return(sumInBaseCurr, baseCurr, nil)
 
+						deps.reportCache.EXPECT().DeleteAffected(ctx, userID, req.Date).Return(nil)
+
 						expense := entities.Expense{
 							Category: req.Category,
 							Sum:      sumInBaseCurr,
@@ -311,6 +374,8 @@ func TestUsecase_AddExpense_WhenErrSavingExpense_ReturnsErr(t *testing.T) {
 						deps.expenseStorage.EXPECT().
 							AddExpense(ctx, userID, expense).
 							Return(addExpenseErr)
+
+						expectWithTransaction(deps.tx)
 
 						wantRes = add_expense.AddExpenseResp{}
 						wantErr = addExpenseErr
@@ -403,6 +468,8 @@ func TestUsecase_AddExpense_WhenNoErr_ReturnsCorrectResult(t *testing.T) {
 							ToBase(ctx, user.Currency, req.Sum, req.Date).
 							Return(sumInBaseCurr, baseCurr, nil)
 
+						deps.reportCache.EXPECT().DeleteAffected(ctx, userID, req.Date).Return(nil)
+
 						expense := entities.Expense{
 							Category: req.Category,
 							Sum:      sumInBaseCurr,
@@ -416,6 +483,8 @@ func TestUsecase_AddExpense_WhenNoErr_ReturnsCorrectResult(t *testing.T) {
 						deps.expenseStorage.EXPECT().
 							AddExpense(ctx, userID, expense).
 							Return(nil)
+
+						expectWithTransaction(deps.tx)
 
 						wantRes = add_expense.AddExpenseResp{
 							UserInputSum: dtos.SumWithCurrency{
@@ -446,29 +515,34 @@ func testAddExpenseWithThisArrange(
 	arrange func(inputData inputData, deps deps) (wantRes add_expense.AddExpenseResp, wantErr error),
 ) {
 	ctrl := gomock.NewController(t)
-	tx := getTxMock(ctrl)
+	tx := add_expense_mocks.NewMocktx(ctrl)
 	expenseStorage := add_expense_mocks.NewMockexpenseStorage(ctrl)
 	userStorage := add_expense_mocks.NewMockuserStorage(ctrl)
 	currencyConverter := add_expense_mocks.NewMockcurrencyConverter(ctrl)
 	limitChecker := add_expense_mocks.NewMocklimitChecker(ctrl)
+	reportCache := add_expense_mocks.NewMockreportCache(ctrl)
 
-	deps := deps{expenseStorage, userStorage, currencyConverter, limitChecker}
+	deps := deps{tx, expenseStorage, userStorage, currencyConverter, limitChecker, reportCache}
 	wantRes, wantErr := arrange(inputData, deps)
 
-	expensesModel := add_expense.NewUsecase(tx, expenseStorage, userStorage, currencyConverter, limitChecker)
+	expensesModel := add_expense.NewUsecase(
+		tx, expenseStorage, userStorage, currencyConverter, limitChecker, reportCache,
+	)
 	gotRes, gotErr := expensesModel.AddExpense(inputData.ctx, inputData.userID, inputData.req)
 
 	assert.Equal(t, wantRes, gotRes)
-	assert.Equal(t, wantErr, gotErr)
+	if wantErr == nil {
+		assert.Nil(t, gotErr)
+	} else {
+		assert.Regexp(t, ".*"+wantErr.Error()+".*", gotErr.Error())
+	}
 }
 
-func getTxMock(ctrl *gomock.Controller) *add_expense_mocks.Mocktx {
-	txMock := add_expense_mocks.NewMocktx(ctrl)
+func expectWithTransaction(txMock *add_expense_mocks.Mocktx) {
 	txMock.EXPECT().WithTransaction(gomock.Any(), gomock.Any()).
 		DoAndReturn(
 			func(ctx context.Context, fn func(context.Context) error) error {
 				return fn(ctx)
 			},
 		)
-	return txMock
 }

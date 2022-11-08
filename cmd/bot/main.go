@@ -10,10 +10,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/go-redis/redis/v9"
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	rates_cache "gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/cache/rates"
+	report_cache "gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/cache/report"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/clients/cbrf"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/clients/tg"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/config"
@@ -66,6 +69,9 @@ func main() {
 	db := mustConnectToDb(cfg.Dsn())
 	dbTxStorage := tx.New(db)
 
+	redisClient := mustConnectToRedisCache(cfg.CacheURL())
+	reportCache := report_cache.New(redisClient)
+
 	expenseStorage := storage.NewExpenses(dbTxStorage)
 	userStorage := storage.NewUsers(dbTxStorage)
 	ratesStorage := storage.NewRates(dbTxStorage)
@@ -73,13 +79,17 @@ func main() {
 
 	ratesApi := &cbrf.RatesApi{}
 	ratesProvider := rates.NewProvider(cfg, ratesApi, ratesStorage)
-	currencyConverter := currency.NewConverter(cfg, ratesProvider, userStorage)
+	cachingRatesProvider := rates_cache.NewInMemCacheDecorator(ratesProvider)
+
+	currencyConverter := currency.NewConverter(cfg, cachingRatesProvider, userStorage)
 	limitChecker := limits.NewChecker(limitStorage, expenseStorage, userStorage, currencyConverter)
 
 	registerUserUc := register_user.NewUsecase(cfg, userStorage)
 	setCurrencyUc := set_currency.NewUsecase(cfg, userStorage)
-	addExpenseUc := add_expense.NewUsecase(dbTxStorage, expenseStorage, userStorage, currencyConverter, limitChecker)
-	getExpensesReportUc := get_expenses_report.NewUsecase(expenseStorage, userStorage, currencyConverter)
+	addExpenseUc := add_expense.NewUsecase(
+		dbTxStorage, expenseStorage, userStorage, currencyConverter, limitChecker, reportCache,
+	)
+	getExpensesReportUc := get_expenses_report.NewUsecase(expenseStorage, userStorage, currencyConverter, reportCache)
 	setLimitUc := set_limit.NewUsecase(limitStorage, userStorage, currencyConverter)
 	removeLimitUc := remove_limit.NewUsecase(limitStorage)
 
@@ -131,6 +141,14 @@ func main() {
 
 func mustConnectToDb(dsn string) *sqlx.DB {
 	return sqlx.MustConnect("postgres", dsn)
+}
+
+func mustConnectToRedisCache(url string) *redis.Client {
+	opt, err := redis.ParseURL(url)
+	if err != nil {
+		logger.Fatal("failed to parse Redis URL", zap.Error(err))
+	}
+	return redis.NewClient(opt)
 }
 
 func startHttpServer(ctx context.Context) {

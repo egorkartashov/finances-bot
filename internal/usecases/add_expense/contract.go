@@ -31,3 +31,7 @@ type currencyConverter interface {
 type limitChecker interface {
 	Check(ctx context.Context, userID int64, expense entities.Expense) (limits.LimitCheckResult, error)
 }
+
+type reportCache interface {
+	DeleteAffected(ctx context.Context, userID int64, newExpenseDate time.Time) error
+}

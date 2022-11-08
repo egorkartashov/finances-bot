@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/dtos"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
@@ -17,6 +18,7 @@ type Usecase struct {
 	currencyConverter currencyConverter
 	userStorage       userStorage
 	limitChecker      limitChecker
+	reportCache       reportCache
 }
 
 type AddExpenseReq struct {
@@ -33,31 +35,34 @@ type AddExpenseResp struct {
 	LimitCheckResult limits.LimitCheckResult
 }
 
-func (u *Usecase) AddExpense(outsideCtx context.Context, userID int64, req AddExpenseReq) (AddExpenseResp, error) {
+func (u *Usecase) AddExpense(ctx context.Context, userID int64, req AddExpenseReq) (AddExpenseResp, error) {
+	user, ok, err := u.userStorage.Get(ctx, userID)
+	if err != nil {
+		return AddExpenseResp{}, err
+	}
+	if !ok {
+		return AddExpenseResp{}, users.NewUserNotFoundErr(userID)
+	}
+
+	expense, baseCurr, err := u.convertToExpenseInBaseCurrency(ctx, req, user.Currency)
+	if err != nil {
+		return AddExpenseResp{}, err
+	}
+
+	err = u.reportCache.DeleteAffected(ctx, userID, req.Date)
+	if err != nil {
+		return AddExpenseResp{}, errors.WithMessage(err, "failed to delete affected cached reports")
+	}
+
 	var res AddExpenseResp
 	txErr := u.tx.WithTransaction(
-		outsideCtx, func(ctx context.Context) error {
-			user, ok, err := u.userStorage.Get(ctx, userID)
-			if err != nil {
-				return err
-			}
-			if !ok {
-				return users.NewUserNotFoundErr(userID)
-			}
-
-			expense, baseCurr, err := u.convertToExpenseInBaseCurrency(ctx, req, user.Currency)
+		ctx, func(txCtx context.Context) error {
+			limitCheckResult, err := u.limitChecker.Check(txCtx, userID, expense)
 			if err != nil {
 				return err
 			}
 
-			// Пока просто сохраняем статус проверки лимита, т.к. запрещать вводить трату не будем.
-			// Если лимит превышен, просто сообщим об этом пользователю
-			limitCheckResult, err := u.limitChecker.Check(ctx, userID, expense)
-			if err != nil {
-				return err
-			}
-
-			if err = u.expenseStorage.AddExpense(ctx, userID, expense); err != nil {
+			if err = u.expenseStorage.AddExpense(txCtx, userID, expense); err != nil {
 				return err
 			}
 
@@ -97,12 +102,15 @@ func (u *Usecase) convertToExpenseInBaseCurrency(
 	return exp, baseCurr, nil
 }
 
-func NewUsecase(tx tx, es expenseStorage, us userStorage, cc currencyConverter, lc limitChecker) *Usecase {
+func NewUsecase(
+	tx tx, es expenseStorage, us userStorage, cc currencyConverter, lc limitChecker, rc reportCache,
+) *Usecase {
 	return &Usecase{
 		tx:                tx,
 		expenseStorage:    es,
 		userStorage:       us,
 		currencyConverter: cc,
 		limitChecker:      lc,
+		reportCache:       rc,
 	}
 }

@@ -14,9 +14,10 @@ const configFile = "configs/config.yaml"
 type Config struct {
 	Token                string `yaml:"token"`
 	RateFetchFreqMinutes int    `yaml:"rateFetchFreqMinutes"`
-	Dsn                  string `env:"FINANCES_DSN"`
+	DbDsn                string `env:"FINANCES_DSN"`
 	BaseCurrency         entities.Currency
 	ServiceName          string `yaml:"serviceName"`
+	CacheURL             string `env:"CACHE_URL"`
 }
 
 type Service struct {
@@ -58,7 +59,7 @@ func (s *Service) RateFetchFreqMinutes() int {
 }
 
 func (s *Service) Dsn() string {
-	return s.config.Dsn
+	return s.config.DbDsn
 }
 
 func (s *Service) BaseCurrency() entities.Currency {
@@ -67,4 +68,8 @@ func (s *Service) BaseCurrency() entities.Currency {
 
 func (s *Service) ServiceName() string {
 	return s.config.ServiceName
+}
+
+func (s *Service) CacheURL() string {
+	return s.config.CacheURL
 }
