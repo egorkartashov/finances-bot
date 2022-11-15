@@ -17,3 +17,10 @@ Grafana: http://127.0.0.1:3000/ (admin/admin)
 `make tracing`
 
 Jaeger: http://127.0.0.1:16686/
+
+
+## Event Bus
+
+`make eventbus`
+
+Kafka: http://127.0.0.1:9092

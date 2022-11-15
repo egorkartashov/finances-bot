@@ -15,6 +15,12 @@ const (
 	ReportFor1Year  ReportPeriod = 3
 )
 
+type ReportFormat string
+
+const (
+	ReportFormatMessage ReportFormat = "message"
+)
+
 type Report struct {
 	Cur     Currency      `json:"curr"`
 	Entries []ReportEntry `json:"entries"`

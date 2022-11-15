@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/opentracing/opentracing-go"
 	"github.com/shopspring/decimal"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
 )
@@ -41,6 +42,8 @@ VALUES (:user_id, :category, :sum_rub, :date)`
 }
 
 func (s *Expenses) GetExpenses(ctx context.Context, userID int64, startDate time.Time) ([]entities.Expense, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "get-expenses-from-db")
+	defer span.Finish()
 
 	const query = `SELECT * FROM expenses WHERE user_id = $1 AND date >= $2`
 

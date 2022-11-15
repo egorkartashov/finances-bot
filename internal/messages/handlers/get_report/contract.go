@@ -3,9 +3,13 @@ package get_report
 import (
 	"context"
 
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/reports"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/get_report"
 )
 
 type usecase interface {
-	GenerateReport(ctx context.Context, userID int64, period entities.ReportPeriod) (*entities.Report, error)
+	GenerateReport(ctx context.Context, req get_report.ReportRequest) (
+		get_report.ReportResponse, error,
+	)
+	ReportFinished(ctx context.Context, report *reports.FormattedReport) error
 }

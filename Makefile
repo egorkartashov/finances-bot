@@ -80,5 +80,9 @@ tracing:
 metrics:
 	cd deployments && make metrics
 
+.PHONY: eventbus
+eventbus:
+	cd deployments && make eventbus
+
 all: logs tracing metrics
 

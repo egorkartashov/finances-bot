@@ -3,9 +3,9 @@ package rates
 import (
 	"context"
 	"fmt"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/cache/lru"
 	"time"
 
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/cache/lru"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
 )
 

@@ -1,8 +1,9 @@
 package lru
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLru_Set_WhenItemNewAndCacheNotFull_PushesToFront(t *testing.T) {

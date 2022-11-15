@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/opentracing/opentracing-go"
 	"github.com/shopspring/decimal"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
 )
@@ -25,6 +26,12 @@ func NewConverter(cfg cfg, ratesProvider ratesProvider, userUc userUc) *Converte
 func (c *Converter) Convert(
 	ctx context.Context, sum decimal.Decimal, from, to entities.Currency, date time.Time,
 ) (res decimal.Decimal, curr entities.Currency, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "convert-currency")
+	defer span.Finish()
+	span.SetTag("from", from)
+	span.SetTag("to", to)
+	span.SetTag("date", date)
+
 	rate, err := c.ratesProvider.GetRate(ctx, from, to, date)
 	if err != nil {
 		return
