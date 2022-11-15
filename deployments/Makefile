@@ -20,4 +20,8 @@ metrics:
 	sudo chmod -R 777 metrics/data
 	cd metrics && sudo docker compose --project-name finances-bot up -d
 
-all: logs tracing metrics
+.PHONY: eventbus
+eventbus:
+	cd eventbus && sudo docker compose --project-name finances-bot up -d
+
+all: logs tracing metrics eventbus

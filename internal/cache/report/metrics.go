@@ -5,7 +5,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/reports"
 )
 
 var (
@@ -15,7 +15,7 @@ var (
 			Subsystem: "bot",
 			Name:      "get_report_counter",
 		},
-		[]string{"userId", "period", "result"},
+		[]string{"userId", "period", "format", "result"},
 	)
 )
 
@@ -27,6 +27,11 @@ const (
 	MetricsErr  GetReportResult = "err"
 )
 
-func writeMetrics(userID int64, period entities.ReportPeriod, res GetReportResult) {
-	GetReportCounter.WithLabelValues(strconv.FormatInt(userID, 10), string(period), string(res))
+func writeMetrics(req *reports.NewReportRequest, res GetReportResult) {
+	GetReportCounter.WithLabelValues(
+		strconv.FormatInt(req.UserID, 10),
+		string(req.Period),
+		string(req.Format),
+		string(res),
+	)
 }

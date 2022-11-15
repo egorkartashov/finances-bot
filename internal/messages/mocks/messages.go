@@ -36,7 +36,7 @@ func (m *MockMessageSender) EXPECT() *MockMessageSenderMockRecorder {
 }
 
 // SendMessage mocks base method.
-func (m *MockMessageSender) SendMessage(userID int64, msg messages.Message) error {
+func (m *MockMessageSender) SendMessage(userID int64, msg *messages.Message) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendMessage", userID, msg)
 	ret0, _ := ret[0].(error)

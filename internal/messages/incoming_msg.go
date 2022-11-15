@@ -8,7 +8,7 @@ import (
 
 type MessageSender interface {
 	SendText(text string, userID int64) error
-	SendMessage(userID int64, msg Message) error
+	SendMessage(userID int64, msg *Message) error
 }
 
 type MessageHandler interface {

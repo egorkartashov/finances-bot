@@ -2,29 +2,30 @@ package get_report
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"github.com/opentracing/opentracing-go"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/utils"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/reports"
+	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/get_report"
 )
 
 type ReportPresenter interface {
 	ReportToPlainText(report *entities.Report) string
 }
 
-type Report struct {
-	usecase   usecase
-	presenter ReportPresenter
-	sender    messages.MessageSender
+type GetReport struct {
+	usecase usecase
+	sender  messages.MessageSender
 }
 
-func New(uc usecase, p ReportPresenter, s messages.MessageSender) *Report {
-	return &Report{
-		usecase:   uc,
-		presenter: p,
-		sender:    s,
+func New(uc usecase, s messages.MessageSender) *GetReport {
+	return &GetReport{
+		usecase: uc,
+		sender:  s,
 	}
 }
 
@@ -43,7 +44,7 @@ var (
 	}
 )
 
-func (h *Report) Handle(ctx context.Context, msg messages.Message) messages.HandleResult {
+func (g *GetReport) Handle(ctx context.Context, msg messages.Message) messages.HandleResult {
 	foundKw := ""
 	for _, kw := range reportKeywords {
 		if strings.HasPrefix(msg.Text, kw) {
@@ -63,20 +64,52 @@ func (h *Report) Handle(ctx context.Context, msg messages.Message) messages.Hand
 	reportPeriod, ok := keywordToPeriod[params]
 	span.SetTag("report-period", reportPeriod)
 	if !ok {
-		err := h.sender.SendText(IncorrectFormatMessage, msg.UserID)
+		err := g.sender.SendText(IncorrectFormatMessage, msg.UserID)
 		return utils.HandleWithErrorOrNil(err)
 	}
 
-	report, err := h.usecase.GenerateReport(ctx, msg.UserID, reportPeriod)
+	req := get_report.ReportRequest{
+		UserID: msg.UserID,
+		Period: reportPeriod,
+	}
+	response, err := g.usecase.GenerateReport(ctx, req)
 	if err != nil {
 		return utils.HandleWithErrorOrNil(err)
 	}
 
-	reportStr := h.presenter.ReportToPlainText(report)
-	err = h.sender.SendText(reportStr, msg.UserID)
-	return utils.HandleWithErrorOrNil(err)
+	if !response.GeneratingInBackground {
+		err = g.sendFormattedReport(response.CachedReport)
+		return utils.HandleWithErrorOrNil(err)
+	} else {
+		err = g.sender.SendText("Начинаем построение отчета...", msg.UserID)
+		return utils.HandleWithErrorOrNil(err)
+	}
 }
 
-func (h *Report) Name() string {
-	return "Report"
+func (g *GetReport) Name() string {
+	return "GetReport"
+}
+
+func (g *GetReport) SendFinishedReport(ctx context.Context, report *reports.FormattedReport) error {
+	if err := g.usecase.ReportFinished(ctx, report); err != nil {
+		return err
+	}
+	return g.sendFormattedReport(report)
+}
+
+func (g *GetReport) sendFormattedReport(report *reports.FormattedReport) error {
+	msg, err := g.toBotMessage(report)
+	if err != nil {
+		return err
+	}
+	return g.sender.SendMessage(report.UserID, msg)
+}
+
+func (g *GetReport) toBotMessage(report *reports.FormattedReport) (*messages.Message, error) {
+	switch report.Format {
+	case entities.ReportFormatMessage:
+		return &messages.Message{Text: report.Payload}, nil
+	default:
+		return nil, errors.New("unsupported report format: " + string(report.Format))
+	}
 }

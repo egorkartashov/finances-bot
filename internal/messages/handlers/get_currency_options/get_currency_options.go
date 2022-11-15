@@ -35,7 +35,7 @@ func (g *GetCurrencyOptions) Handle(_ context.Context, msg messages.Message) mes
 		InlineKeyboardButtons: buttons,
 	}
 
-	err := g.sender.SendMessage(msg.UserID, resp)
+	err := g.sender.SendMessage(msg.UserID, &resp)
 	return utils.HandleWithErrorOrNil(err)
 }
 

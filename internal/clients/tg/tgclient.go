@@ -39,7 +39,7 @@ func (c *Client) SendText(text string, userID int64) error {
 	return nil
 }
 
-func (c *Client) SendMessage(userID int64, msg messages.Message) error {
+func (c *Client) SendMessage(userID int64, msg *messages.Message) error {
 	tgMsg := tgbotapi.NewMessage(userID, msg.Text)
 	if msg.InlineKeyboardButtons != nil {
 		tgMsg.ReplyMarkup = convertToTgInlineKeyboard(msg.InlineKeyboardButtons)

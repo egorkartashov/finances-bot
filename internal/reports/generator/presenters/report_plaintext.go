@@ -1,22 +1,27 @@
 package presenters
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
 )
 
-type Report struct {
+type FormatMessage struct {
 }
 
-func NewReport() *Report {
-	return &Report{}
+func NewFormatMessage() *FormatMessage {
+	return &FormatMessage{}
 }
 
-func (p *Report) ReportToPlainText(report *entities.Report) string {
+func (p *FormatMessage) Format() entities.ReportFormat {
+	return entities.ReportFormatMessage
+}
+
+func (p *FormatMessage) Present(_ context.Context, report *entities.Report) (string, error) {
 	if len(report.Entries) == 0 {
-		return "Трат нет"
+		return "Трат нет", nil
 	}
 
 	var sb strings.Builder
@@ -28,5 +33,5 @@ func (p *Report) ReportToPlainText(report *entities.Report) string {
 
 	var reportStr = sb.String()
 	reportStr = strings.Trim(reportStr, "\n")
-	return reportStr
+	return reportStr, nil
 }
