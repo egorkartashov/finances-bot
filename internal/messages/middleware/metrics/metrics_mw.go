@@ -7,7 +7,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages"
 )
 
 var (

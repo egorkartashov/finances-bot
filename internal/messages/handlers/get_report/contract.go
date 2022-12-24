@@ -3,8 +3,8 @@ package get_report
 import (
 	"context"
 
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/reports"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/get_report"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/reports"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/usecases/get_report"
 )
 
 type usecase interface {

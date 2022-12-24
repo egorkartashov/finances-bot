@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/currency"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/currency"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/entities"
 	"golang.org/x/net/html/charset"
 )
 

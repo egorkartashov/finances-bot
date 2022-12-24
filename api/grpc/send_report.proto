@@ -1,6 +1,6 @@
 syntax = 'proto3';
 
-option go_package = "gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/grpcapi/send_report";
+option go_package = "gitlab.ozon.dev/egor.linkinked/finances-bot/internal/grpcapi/send_report";
 
 package send_report;
 

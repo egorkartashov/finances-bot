@@ -4,12 +4,12 @@ import (
 	"context"
 	"strings"
 
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/add_expense"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/get_report"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/remove_limit"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/set_limit"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/utils"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages/handlers/add_expense"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages/handlers/get_report"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages/handlers/remove_limit"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages/handlers/set_limit"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages/handlers/utils"
 )
 
 type Start struct {

@@ -6,7 +6,7 @@ import (
 
 	"github.com/caarlos0/env/v6"
 	"github.com/pkg/errors"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/entities"
 	"gopkg.in/yaml.v3"
 )
 

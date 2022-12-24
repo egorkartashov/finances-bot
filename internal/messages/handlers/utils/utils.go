@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages"
 )
 
 func HandleWithErrorOrNil(err error) messages.HandleResult {

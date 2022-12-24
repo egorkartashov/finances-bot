@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/opentracing/opentracing-go"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/grpcapi/send_report"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/reports"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/grpcapi/send_report"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/reports"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

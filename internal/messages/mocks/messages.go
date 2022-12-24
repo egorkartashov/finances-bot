@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	messages "gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
+	messages "gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages"
 )
 
 // MockMessageSender is a mock of MessageSender interface.

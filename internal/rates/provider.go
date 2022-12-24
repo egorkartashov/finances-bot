@@ -8,8 +8,8 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/logger"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/entities"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/logger"
 	"go.uber.org/zap"
 )
 

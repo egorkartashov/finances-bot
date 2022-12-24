@@ -3,7 +3,7 @@ package add_expense
 import (
 	"context"
 
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/add_expense"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/usecases/add_expense"
 )
 
 type usecase interface {

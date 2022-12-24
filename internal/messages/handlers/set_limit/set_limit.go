@@ -9,10 +9,10 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/logger"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/utils"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/set_limit"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/logger"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages/handlers/utils"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/usecases/set_limit"
 	"go.uber.org/zap"
 )
 

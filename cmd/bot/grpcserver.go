@@ -8,9 +8,9 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/opentracing/opentracing-go"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/grpcapi/send_report"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/grpcapi/server_interceptors"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/logger"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/grpcapi/send_report"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/grpcapi/server_interceptors"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/logger"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )

@@ -5,7 +5,7 @@ MOCKGEN=${BINDIR}/mockgen_${GOVER}
 SMARTIMPORTS=${BINDIR}/smartimports_${GOVER}
 LINTVER=v1.49.0
 LINTBIN=${BINDIR}/lint_${GOVER}_${LINTVER}
-PACKAGE=gitlab.ozon.dev/egor.linkinked/kartashov-egor/cmd/bot
+PACKAGE=gitlab.ozon.dev/egor.linkinked/finances-bot/cmd/bot
 
 export COMPOSE_PROJECT_NAME=finances-bot
 

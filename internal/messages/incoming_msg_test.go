@@ -2,12 +2,12 @@ package messages_test
 
 import (
 	"context"
+	messages_mocks "gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages/mocks"
 	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/mocks"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages"
 )
 
 func Test_ShouldSendSomethingHasBrokenMessage_WhenHandledWithErr(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	"github.com/Shopify/sarama"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/reports"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/reports"
 )
 
 type ReportRequestProducer struct {

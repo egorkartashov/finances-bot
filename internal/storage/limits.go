@@ -5,7 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/shopspring/decimal"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/entities"
 )
 
 type Limits struct {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/entities"
 )
 
 type ReportRequester interface {

@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"time"
 
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/logger"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/logger"
 	"go.uber.org/zap"
 )
 

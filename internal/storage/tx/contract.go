@@ -5,7 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/jmoiron/sqlx"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/storage"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/storage"
 )
 
 type db interface {

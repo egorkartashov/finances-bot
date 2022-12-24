@@ -3,7 +3,7 @@ package register_user
 import (
 	"context"
 
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/entities"
 )
 
 type userStorage interface {

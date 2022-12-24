@@ -4,8 +4,8 @@ import (
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/jmoiron/sqlx"
 	"github.com/opentracing/opentracing-go"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/config"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/grpcapi/client_interceptors"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/config"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/grpcapi/client_interceptors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

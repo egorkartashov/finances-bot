@@ -7,8 +7,8 @@ import (
 
 	"github.com/Shopify/sarama"
 	"github.com/opentracing/opentracing-go"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/logger"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/reports"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/logger"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/reports"
 	"go.uber.org/zap"
 )
 

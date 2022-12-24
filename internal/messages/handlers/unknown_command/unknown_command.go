@@ -3,7 +3,7 @@ package unknown_command
 import (
 	"context"
 
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages"
 )
 
 type UnknownCommand struct {

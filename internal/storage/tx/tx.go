@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/logger"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/storage"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/logger"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/storage"
 	"go.uber.org/zap"
 )
 

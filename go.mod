@@ -1,4 +1,4 @@
-module gitlab.ozon.dev/egor.linkinked/kartashov-egor
+module gitlab.ozon.dev/egor.linkinked/finances-bot
 
 go 1.19
 

@@ -4,8 +4,8 @@ package get_report
 import (
 	"context"
 
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/reports"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/entities"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/reports"
 )
 
 type reportCache interface {

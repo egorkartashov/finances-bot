@@ -8,10 +8,10 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/limits"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/utils"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/usecases/add_expense"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/limits"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages/handlers/utils"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/usecases/add_expense"
 )
 
 type AddExpense struct {

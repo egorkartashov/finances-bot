@@ -5,7 +5,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/grpcapi/utils"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/grpcapi/utils"
 	"google.golang.org/grpc"
 )
 

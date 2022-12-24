@@ -7,8 +7,8 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/pkg/errors"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/logger"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/logger"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages"
 )
 
 type TokenGetter interface {

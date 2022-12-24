@@ -3,8 +3,8 @@ package logging
 import (
 	"context"
 
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/logger"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/logger"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages"
 	"go.uber.org/zap"
 )
 

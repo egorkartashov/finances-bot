@@ -6,9 +6,9 @@ import (
 	"github.com/Shopify/sarama"
 	"github.com/go-redis/redis/v9"
 	"github.com/jmoiron/sqlx"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/clients/tg"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/config"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/logger"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/clients/tg"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/config"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/logger"
 	"go.uber.org/zap"
 )
 

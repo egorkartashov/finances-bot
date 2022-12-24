@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/messages/handlers/utils"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/messages/handlers/utils"
 )
 
 type RemoveLimit struct {

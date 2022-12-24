@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/uber/jaeger-client-go/config"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/logger"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/logger"
 	"go.uber.org/zap"
 )
 

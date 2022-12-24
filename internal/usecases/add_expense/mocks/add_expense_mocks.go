@@ -11,8 +11,8 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	decimal "github.com/shopspring/decimal"
-	entities "gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
-	limits "gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/limits"
+	entities "gitlab.ozon.dev/egor.linkinked/finances-bot/internal/entities"
+	limits "gitlab.ozon.dev/egor.linkinked/finances-bot/internal/limits"
 )
 
 // Mocktx is a mock of tx interface.

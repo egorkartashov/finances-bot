@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/dtos"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/entities"
-	"gitlab.ozon.dev/egor.linkinked/kartashov-egor/internal/users"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/dtos"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/entities"
+	"gitlab.ozon.dev/egor.linkinked/finances-bot/internal/users"
 )
 
 type Usecase struct {
